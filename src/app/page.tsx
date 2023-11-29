@@ -1,65 +1,143 @@
-import Link from "next/link";
 
-import { CreatePost } from "~/app/_components/create-post";
 import { api } from "~/trpc/server";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  HamburgerMenuIcon,
+  RocketIcon,
+  PlusCircledIcon,
+  CheckCircledIcon,
+} from "@radix-ui/react-icons";
 
 export default async function Home() {
   const hello = await api.post.hello.query({ text: "from tRPC" });
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
-      <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16 ">
-        <h1 className="text-5xl font-extrabold tracking-tight sm:text-[5rem]">
-          Create <span className="text-[hsl(280,100%,70%)]">T3</span> App
-        </h1>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-8">
-          <Link
-            className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 hover:bg-white/20"
-            href="https://create.t3.gg/en/usage/first-steps"
-            target="_blank"
-          >
-            <h3 className="text-2xl font-bold">First Steps →</h3>
-            <div className="text-lg">
-              Just the basics - Everything you need to know to set up your
-              database and authentication.
+    <main className="flex min-h-screen bg-slate-50 text-slate-950 dark:bg-slate-900 dark:text-slate-50">
+      {/* LEFT */}
+      <section className="w-1/2 flex flex-col border-r border-r-slate-300">
+        <header className="flex justify-between px-8 py-4 border-b border-slate-300">
+          <Button variant="outline" size="icon">
+            <HamburgerMenuIcon className="h-6 w-6" />
+          </Button>
+
+          <Button variant="outline" size="icon">
+            <RocketIcon className="h-6 w-6" />
+          </Button>
+        </header>
+
+        <div className="flex flex-col gap-y-6 px-8 py-4">
+
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium text-slate-950 dark:text-slate-50">
+              Name
+            </label>
+            <Input type="text" />
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium text-slate-950 dark:text-slate-50">
+              Description
+            </label>
+            <Input type="text" />
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium text-slate-950 dark:text-slate-50">
+              Instructions
+            </label>
+            <Textarea />
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <h3 className="text-sm font-medium text-slate-950 dark:text-slate-50">
+              Knowledge
+            </h3>
+            <Button variant="outline" size="sm" className="self-start">
+              Upload
+            </Button>
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <h3 className="text-sm font-medium text-slate-950 dark:text-slate-50">
+              Capabilities
+            </h3>
+
+            <div className="flex items-center gap-x-2">
+              <Checkbox />
+              <span className="text-sm font-medium text-slate-950 dark:text-slate-50">
+                Code Interpreter
+              </span>
             </div>
-          </Link>
-          <Link
-            className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 hover:bg-white/20"
-            href="https://create.t3.gg/en/introduction"
-            target="_blank"
-          >
-            <h3 className="text-2xl font-bold">Documentation →</h3>
-            <div className="text-lg">
-              Learn more about Create T3 App, the libraries it uses, and how to
-              deploy it.
+
+            <div className="flex items-center gap-x-2">
+              <Checkbox disabled />
+              <span className="text-sm font-medium text-slate-400 dark:text-slate-50">
+                Image Generation (coming soon...)
+              </span>
             </div>
-          </Link>
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <h3 className="text-sm font-medium text-slate-950 dark:text-slate-50">
+              Functions
+            </h3>
+            <Button variant="outline" size="sm" className="flex items-center gap-x-2 self-start">
+              <span>Add</span>
+              <PlusCircledIcon className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
-        <div className="flex flex-col items-center gap-2">
-          <p className="text-2xl text-white">
-            {hello ? hello.greeting : "Loading tRPC query..."}
-          </p>
+      </section>
+
+      {/* RIGHT */}
+      <section className="relative w-1/2 flex-col px-8 py-4">
+        <div className="absolute inset-0 grid place-items-center">
+          <div className="p-8 flex flex-col items-center gap-y-10">
+            <h1 className="text-4xl font-extrabold">GPT Builder</h1>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="flex items-center gap-x-2">
+                <CheckCircledIcon className="h-4 w-4 text-green-500" />
+                <span className="text-sm text-slate-950 dark:text-slate-50">
+                  No monthly fee, no usage limit
+                </span>
+              </div>
+
+              <div className="flex items-center gap-x-2">
+                <CheckCircledIcon className="h-4 w-4 text-green-500" />
+                <span className="text-sm text-slate-950 dark:text-slate-50">
+                  Use your own API key
+                </span>
+              </div>
+
+              <div className="flex items-center gap-x-2">
+                <CheckCircledIcon className="h-4 w-4 text-green-500" />
+                <span className="text-sm text-slate-950 dark:text-slate-50">
+                  Chat folders, search, export
+                </span>
+              </div>
+
+              <div className="flex items-center gap-x-2">
+                <CheckCircledIcon className="h-4 w-4 text-green-500" />
+                <span className="text-sm text-slate-950 dark:text-slate-50">
+                  New features every week
+                </span>
+              </div>
+            </div>
+
+            <Button size="lg">
+              Enter API Key
+            </Button>
+          </div>
         </div>
 
-        <CrudShowcase />
-      </div>
+        <Input className="fixed bottom-4 right-8 w-[45%]" placeholder="Type here..." />
+      </section>
     </main>
   );
 }
 
-async function CrudShowcase() {
-  const latestPost = await api.post.getLatest.query();
-
-  return (
-    <div className="w-full max-w-xs">
-      {latestPost ? (
-        <p className="truncate">Your most recent post: {latestPost.name}</p>
-      ) : (
-        <p>You have no posts yet.</p>
-      )}
-
-      <CreatePost />
-    </div>
-  );
-}
