@@ -53,7 +53,18 @@ const formSchema = z.object({
   functions: z.array(schema),
 })
 
-const Obj = ({ parentName }: { parentName: keyof z.infer<typeof formSchema> }) => {
+type Keypath<T> = T extends { properties: Schema[] }
+  ? { [K in keyof T['properties']]: `properties.${number}` | Keypath<T['properties'][K]> }[keyof T['properties']]
+  : T extends { items: Omit<Schema, "name" | "description"> }
+  ? `items.${number}` | Keypath<T['items']>
+  : never;
+
+type FormSchemaKeyPaths = Keypath<Schema>;
+
+const asd: FormSchemaKeyPaths = "functions.0.name"
+console.log("asd: ", asd);
+
+const Obj = ({ parentName }: { parentName: FormSchemaKeyPaths }) => {
   const form = useFormContext<z.infer<typeof formSchema>>();
 
   const fieldArray = useFieldArray({
