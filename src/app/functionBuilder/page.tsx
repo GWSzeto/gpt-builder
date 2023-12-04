@@ -1,5 +1,6 @@
 'use client';
 
+import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useFieldArray, useFormContext } from "react-hook-form";
 import * as z from "zod";
@@ -52,7 +53,7 @@ const formSchema = z.object({
   functions: z.array(schema),
 })
 
-const Obj = ({ parentName }: { parentName: `functions` }) => {
+const Obj = ({ parentName }: { parentName: keyof z.infer<typeof formSchema> }) => {
   const form = useFormContext<z.infer<typeof formSchema>>();
 
   const fieldArray = useFieldArray({
@@ -124,7 +125,7 @@ const Obj = ({ parentName }: { parentName: `functions` }) => {
   )
 }
 
-const FunctionInputs = ({ parentName }: { parentName: `functions.${number}` }) => {
+const FunctionInputs = ({ parentName }: { parentName: `${keyof z.infer<typeof formSchema>}.${number}` }) => {
   const form = useFormContext<z.infer<typeof formSchema>>();
 
   const parentValues = form.watch(parentName);
@@ -193,7 +194,9 @@ const FunctionInputs = ({ parentName }: { parentName: `functions.${number}` }) =
             Properties
           </FormLabel>
           
-          <Obj parentName={`${parentName}.properties`} />
+          <div className="ml-6">
+            <Obj parentName={`${parentName}.properties`} />
+          </div>
         </FormItem>
       )}
     </>
