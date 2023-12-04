@@ -2,33 +2,19 @@
 
 import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, useFieldArray, useFormContext } from "react-hook-form";
+import { useForm, useFormContext } from "react-hook-form";
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { twilight } from 'react-syntax-highlighter/dist/cjs/styles/prism';
 import * as z from "zod";
 
 // components
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  useFormField,
-} from "@/components/ui/form";
+import { Form } from "@/components/ui/form"; 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Obj } from "./_components/FunctionInputs";
 
 // icons
 import {
   CaretLeftIcon,
-  PlusCircledIcon,
-  MinusCircledIcon,
 } from "@radix-ui/react-icons";
 
 type Schema = {
@@ -53,169 +39,84 @@ const formSchema = z.object({
   functions: z.array(schema),
 })
 
-type Keypath<T> = T extends { properties: Schema[] }
-  ? { [K in keyof T['properties']]: `properties.${number}` | Keypath<T['properties'][K]> }[keyof T['properties']]
-  : T extends { items: Omit<Schema, "name" | "description"> }
-  ? `items.${number}` | Keypath<T['items']>
-  : never;
-
-type FormSchemaKeyPaths = Keypath<Schema>;
-
-const asd: FormSchemaKeyPaths = "functions.0.name"
-console.log("asd: ", asd);
-
-const Obj = ({ parentName }: { parentName: FormSchemaKeyPaths }) => {
-  const form = useFormContext<z.infer<typeof formSchema>>();
-
-  const fieldArray = useFieldArray({
-    control: form.control,
-    name: parentName,
-  })
-
-  return (
-    <div className="flex flex-col gap-y-6">
-      {fieldArray.fields.map((field, i) => (
-        <div className="relative flex flex-col gap-y-6" key={field.id}>
-          <Button
-            onClick={() => fieldArray.remove(i)}
-            variant="outline"
-            size="icon"
-            className="absolute top-0 right-0 rounded-full h-auto w-auto p-1"
-          >
-            <MinusCircledIcon className="h-4 w-4" />
-          </Button>
-          <FormField
-            control={form.control}
-            name={`${parentName}.${i}.name`}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-sm font-medium text-slate-950 dark:text-slate-50">
-                  Name
-                </FormLabel>
-
-                <FormControl>
-                  <Input {...field} />
-                </FormControl>
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name={`${parentName}.${i}.description`}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-sm font-medium text-slate-950 dark:text-slate-50">
-                  Description
-                </FormLabel>
-
-                <FormControl>
-                  <Input {...field} />
-                </FormControl>
-              </FormItem>
-            )}
-          />
-
-          <FunctionInputs parentName={`${parentName}.${i}`} />
-        </div>
-      ))}
-
-      <Button 
-        onClick={() => fieldArray.append({
-          name: "",
-          description: "",
-          type: "string",
-        })}
-        variant="outline"
-        className="flex items-center gap-x-2 self-start"
-      >
-        <span className="mt-1">Add</span>
-        <PlusCircledIcon className="h-4 w-4" />
-      </Button>
-    </div>
-  )
-}
-
-const FunctionInputs = ({ parentName }: { parentName: `${keyof z.infer<typeof formSchema>}.${number}` }) => {
-  const form = useFormContext<z.infer<typeof formSchema>>();
-
-  const parentValues = form.watch(parentName);
-
-  return (
-    <>
-      <FormField
-        control={form.control}
-        name={`${parentName}.type`}
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel className="text-sm font-medium text-slate-950 dark:text-slate-50">
-              Type
-            </FormLabel>
-
-            <Select onValueChange={field.onChange} defaultValue={field.value}>
-              <FormControl>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-              </FormControl>
-
-              <SelectContent>
-                <SelectItem value="string">string</SelectItem>
-                <SelectItem value="number">number</SelectItem>
-                <SelectItem value="boolean">boolean</SelectItem>
-                <SelectItem value="array">array</SelectItem>
-                <SelectItem value="object">object</SelectItem>
-              </SelectContent>
-            </Select>
-          </FormItem>
-        )}
-      />
-      
-      {parentValues?.type === "string" && (
-        <FormField
-          control={form.control}
-          name={`${parentName}.enum`}
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-sm font-medium text-slate-950 dark:text-slate-50">
-                Enum
-              </FormLabel>
-
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
-            </FormItem>
-          )}
-        />
-      )}
-
-      {parentValues?.type === "array" && (
-        <FormItem>
-          <FormLabel className="text-sm font-medium text-slate-950 dark:text-slate-50">
-            Items
-          </FormLabel>
-          
-          <FunctionInputs parentName={`${parentName}.items`} />
-        </FormItem>
-      )}
-
-      {parentValues?.type === "object" && (
-        <FormItem>
-          <FormLabel className="text-sm font-medium text-slate-950 dark:text-slate-50">
-            Properties
-          </FormLabel>
-          
-          <div className="ml-6">
-            <Obj parentName={`${parentName}.properties`} />
-          </div>
-        </FormItem>
-      )}
-    </>
-  )
-}
-
+const formSchemaKeyPath = z.string().regex(/^(functions)((\.[0-9]+)(\.(properties|items)))*/)
 
 const FunctionBuilderForm = () => {
+  return (
+    <section className="w-1/2 flex flex-col border-r border-r-slate-300 overflow-x-auto">
+      <header className="flex px-8 py-4 border-b border-slate-300">
+        <Link href="/">
+          <Button variant="outline" size="icon">
+            <CaretLeftIcon className="h-5 w-5" />
+          </Button >
+        </Link>
+      </header>
+      
+      <div className="flex flex-col gap-y-6 px-8 py-4" >
+        <Obj parentName="functions" />
+      </div>
+    </section>
+  )
+}
+
+const Viewer = () => {
+  const form = useFormContext<z.infer<typeof formSchema>>()
+  const data = form.watch("functions")
+
+  const parseFunctionParameters = (item: Schema) => {
+    const baseData = {
+      description: item.description,
+      type: item.type,
+    }
+
+    if (item.type === "string") {
+      return {
+        ...baseData,
+        enum: [],
+      }
+    } else if (item.type === "object") {
+      return {
+        ...baseData,
+        properties: [],
+      }
+    } else if (item.type === "array") { 
+      return {
+        ...baseData,
+        items: {}
+      }
+    } else {
+      return baseData
+    }
+  }
+
+  const functionMap = data.reduce((acc, curr) => ({
+    ...acc,
+    [curr.name]: parseFunctionParameters(curr),
+  }), {} as Record<string, any>)
+  console.log("function map: ", functionMap)
+
+  const functionValue = {
+    type: "function",
+    function: {
+      name: "",
+      description: "",
+      parameters: {
+        type: "object",
+        properties: functionMap
+      }
+    }
+  }
+
+  return (
+    <section className="relative w-1/2 flex-col px-8 py-4">
+      <SyntaxHighlighter language="json" style={twilight} customStyle={{ border: 0, margin: 0, height: "100%" }}>
+        {JSON.stringify(functionValue, null, 2)}
+      </SyntaxHighlighter>
+    </section>
+  )
+}
+
+export default function Home() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -223,7 +124,6 @@ const FunctionBuilderForm = () => {
         type: "string",
         name: "",
         description: "",
-        enum: [],
       }],
     },
   });
@@ -232,37 +132,18 @@ const FunctionBuilderForm = () => {
     console.log(data);
   }
 
-  const parentValues = form.watch("functions");
-  console.log("function values: ", parentValues);
+  const asd = form.watch("functions")
+  console.log("asd: :", asd)
 
   return (
-    <section className="w-1/2 flex flex-col border-r border-r-slate-300">
-      <header className="flex px-8 py-4 border-b border-slate-300">
-        <Link href="/">
-          <Button variant="outline" size="icon">
-            <CaretLeftIcon className="h-5 w-5" />
-          </Button >
-        </Link>
-      </header>
-     
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-y-6 px-8 py-4">
-          <Obj parentName="functions" />
-        </form>
-      </Form>
-    </section>
-  )
-}
-
-export default function Home() {
-  return (
-    <main className="flex min-h-screen bg-slate-50 text-slate-950 dark:bg-slate-900 dark:text-slate-50">
-      {/* LEFT */}
-      <FunctionBuilderForm />
-      {/* RIGHT */}
-      <section className="relative w-1/2 flex-col px-8 py-4">
-      </section>
-    </main>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="flex min-h-screen bg-slate-50 text-slate-950 dark:bg-slate-900 dark:text-slate-50">
+        {/* LEFT */}
+        <FunctionBuilderForm />
+        {/* RIGHT */}
+        <Viewer />
+      </form>
+    </Form>
   );
 }
 
