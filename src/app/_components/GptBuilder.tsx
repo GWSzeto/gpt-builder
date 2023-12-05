@@ -5,7 +5,10 @@ import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { api } from "~/trpc/server";
+import { api } from "~/trpc/react";
+
+// utils
+import { AddRemoveArray, debounce } from "@/lib/utils";
 
 // components
 import AssistantsMenu from "./AssistantsMenu";
@@ -29,14 +32,11 @@ const formSchema = z.object({
   name: z.string(),
   description: z.string(),
   instructions: z.string(),
-  codeInterpreter: z.boolean(),
-  imageGeneration: z.boolean(),
+  tools: z.array(z.string()),
 });
 
 export default function GptBuilderForm() {
-  const [localLoaded, setLocalLoaded] = useState<boolean>(false);
-
-  const data = api.assistant.update.useMutate();
+  const updateAssistant = api.assistant.update.useMutation();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -44,7 +44,7 @@ export default function GptBuilderForm() {
       name: '',
       description: '',
       instructions: '',
-      codeInterpreter: false,
+      tools: [],
     },
   });
 
@@ -53,16 +53,17 @@ export default function GptBuilderForm() {
   }
 
   const data = form.watch();
+  console.log("data: ", data);
 
   useEffect(() => {
     if (form.formState.isValid && !form.formState.isValidating) {
-      console.log("data: ", data);
+      debounce(() => {
+        // Need to think about how to get the assistantId in here
+        // will be used in multiple areas, so thinking about a global state
+        // updateAssistant.mutate(data)
+      }, 1000);
     }
   }, [form.formState, form.formState.isValidating, data])
-
-  useEffect(() => {
-    setLocalLoaded(true);
-  }, [])
 
   return (
     <section className="w-1/2 flex flex-col border-r border-r-slate-300">
@@ -136,44 +137,32 @@ export default function GptBuilderForm() {
               Capabilities
             </h3>
 
-            <FormField
-              control={form.control}
-              name="codeInterpreter"
-              render={({ field }) => (
-                <div className="flex items-center gap-x-2">
-                  <FormControl>
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
+            <div className="flex items-center gap-x-2">
+              <FormControl>
+                <Checkbox
+                  checked={data.tools.includes("codeInterpreter")}
+                  onCheckedChange={(checked) => form.setValue("tools", AddRemoveArray(Boolean(checked), data.tools, "codeInterpreter"))}
+                />
+              </FormControl>
 
-                  <FormLabel className="text-sm font-medium text-slate-950 dark:text-slate-50">
-                    Code Interpreter
-                  </FormLabel>
-                </div>
-              )}
-            />
+              <FormLabel className="text-sm font-medium text-slate-950 dark:text-slate-50">
+                Code Interpreter
+              </FormLabel>
+            </div>
 
-            <FormField
-              control={form.control}
-              name="imageGeneration"
-              render={({ field }) => (
-                <div className="flex items-center gap-x-2">
-                  <FormControl>
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                      disabled
-                    />
-                  </FormControl>
+            <div className="flex items-center gap-x-2">
+              <FormControl>
+                <Checkbox
+                  checked={data.tools.includes("imageGeneration")}
+                  onCheckedChange={(checked) => form.setValue("tools", AddRemoveArray(Boolean(checked), data.tools, "codeInterpreter"))}
+                  disabled
+                />
+              </FormControl>
 
-                  <FormLabel className="text-sm font-medium text-slate-400 dark:text-slate-50">
-                    Image Generation (coming soon...)
-                  </FormLabel>
-                </div>
-              )}
-            />
+              <FormLabel className="text-sm font-medium text-slate-400 dark:text-slate-50">
+                Image Generation (coming soon...)
+              </FormLabel>
+            </div>
           </div>
 
           <FormItem className="flex flex-col gap-1">
