@@ -12,34 +12,13 @@ import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Obj } from "./_components/FunctionInputs";
 
+// types
+import { type Schema, formSchema } from "./_components/types";
+
 // icons
 import {
   CaretLeftIcon,
 } from "@radix-ui/react-icons";
-
-type Schema = {
-  name: string,
-  description: string,
-  type: "string" | "number" | "boolean" | "array" | "object",
-  enum?: string[],
-  properties?: Schema[],
-  items?: Omit<Schema, "name" | "description">,
-}
-
-const schema: z.ZodType<Schema> = z.object({
-  name: z.string(),
-  description: z.string(),
-  type: z.union([z.literal("string"), z.literal("number"), z.literal("boolean"), z.literal("array"), z.literal("object")]),
-  enum: z.array(z.string()).optional(),
-  properties: z.array(z.lazy(() => schema)).optional(),
-  items: z.lazy(() => schema).optional(),
-})
-
-const formSchema = z.object({
-  functions: z.array(schema),
-})
-
-const formSchemaKeyPath = z.string().regex(/^(functions)((\.[0-9]+)(\.(properties|items)))*/)
 
 const FunctionBuilderForm = () => {
   return (
@@ -132,8 +111,7 @@ export default function Home() {
     console.log(data);
   }
 
-  const asd = form.watch("functions")
-  console.log("asd: :", asd)
+  const parentValues = form.watch("functions");
 
   return (
     <Form {...form}>

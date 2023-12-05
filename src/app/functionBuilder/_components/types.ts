@@ -22,3 +22,5 @@ export const formSchema = z.object({
   functions: z.array(schema),
 })
 
+const formSchemaKeyPath = z.string().regex(/^(functions)((\.[0-9]+)(\.(properties|items)))*/)
+
