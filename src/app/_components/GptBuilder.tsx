@@ -1,10 +1,11 @@
 'use client'
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
+import { api } from "~/trpc/server";
 
 // components
 import AssistantsMenu from "./AssistantsMenu";
@@ -33,6 +34,10 @@ const formSchema = z.object({
 });
 
 export default function GptBuilderForm() {
+  const [localLoaded, setLocalLoaded] = useState<boolean>(false);
+
+  const data = api.assistant.update.useMutate();
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -54,6 +59,10 @@ export default function GptBuilderForm() {
       console.log("data: ", data);
     }
   }, [form.formState, form.formState.isValidating, data])
+
+  useEffect(() => {
+    setLocalLoaded(true);
+  }, [])
 
   return (
     <section className="w-1/2 flex flex-col border-r border-r-slate-300">

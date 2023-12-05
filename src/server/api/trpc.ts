@@ -23,7 +23,15 @@ import { ZodError } from "zod";
  * @see https://trpc.io/docs/server/context
  */
 export const createTRPCContext = async (opts: { headers: Headers }) => {
+  console.log("headers: ", opts.headers);
+  const apiKey = opts.headers.get("x-openai-api-key") || "";
+
+  if (!apiKey) {
+    throw new Error("missing openai api key");
+  }
+
   return {
+    apiKey,
     ...opts,
   };
 };

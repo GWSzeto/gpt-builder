@@ -1,6 +1,6 @@
+
 // components
-import { Input } from "@/components/ui/input";
-import EnterApiKey from "@/components/EnterApiKey";
+import GptInput from "./GptInput";
 
 // icons
 import { CheckCircledIcon } from "@radix-ui/react-icons"; 
@@ -41,14 +41,11 @@ export default function GptChat() {
               </span>
             </div>
           </div>
-
-          <EnterApiKey />
         </div>
       </div>
+
+      <GptInput />
       
-      <div className="fixed w-1/2 bottom-0 right-0 px-8 py-4">
-        <Input placeholder="Type here..." />
-      </div>
     </section>
   )
 }
