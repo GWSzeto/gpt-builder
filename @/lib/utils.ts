@@ -14,11 +14,22 @@ export function debounce<T extends (...args: any[]) => void>(func: T, delay: num
   };
 }
 
-export function AddRemoveArray(flag: boolean, arr: string[], item: string) {
+export function AddRemoveArray<T>(flag: boolean, arr: T[], item: T) {
   if (flag) {
     return [...arr, item];
   } else {
     return arr.filter((i) => i !== item);
   }
+}
+
+
+// TIME
+
+export function getDateTime(date: Date) {
+  return `${date.getDay()}/${date.getMonth()}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`
+}
+
+export function getTime(date: Date) {
+  return `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`
 }
 

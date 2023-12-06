@@ -1,6 +1,10 @@
 'use client'
 
 import { useState, useEffect, FormEvent } from "react";
+import { api } from "~/trpc/react";
+
+// utils
+import useUrlState from "@/hooks/useUrlState";
 
 // components
 import EnterApiKey from "@/components/EnterApiKey";
@@ -10,14 +14,31 @@ export default function GptInput() {
   const [open, setOpen] = useState<boolean>(false);
   const [input, setInput] = useState<string>("");
   const [localLoaded, setLocalLoaded] = useState<boolean>(false);
+  const [message, setMessages] = useState<string[]>([]);
+  const url = useUrlState()
 
-  const onSubmit = (e: FormEvent) => {
+  const createThreadAndRun = api.thread.createAndRun.useMutation();
+  const createMessage = api.message.create.useMutation();
+
+  const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    console.log("submit: ", input);
+
+    const assistantId = url.fetch("aid")
+    const threadId = url.fetch("tid")
+
     if (input.length === 0) return;
     if (localStorage.getItem("openai-api-key") === null) {
       setOpen(true);
-      return;
+      return
+    }
+    if (assistantId) {
+      if (threadId) {
+        // TODO: show the run steps in the assistant message
+        const runSteps = await createMessage.mutateAsync({ threadId, assistantId, message: input })
+        const assistantMessage = runSteps[runSteps.length - 1]
+        assistantMessage.
+        
+      }
     }
     
     setInput("");

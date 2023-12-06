@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
 import useDebounce from "@/hooks/useDebounce";
@@ -9,7 +9,8 @@ import * as z from "zod";
 import { api } from "~/trpc/react";
 
 // utils
-import { AddRemoveArray, debounce } from "@/lib/utils";
+import { AddRemoveArray, getTime } from "@/lib/utils";
+import useUrlState from "@/hooks/useUrlState";
 
 // components
 import AssistantsMenu from "./AssistantsMenu";
@@ -29,57 +30,30 @@ import {
 // icons
 import { PlusCircledIcon } from "@radix-ui/react-icons"; 
 
+const tool = z.union([z.literal("code_interpreter"), z.literal("retrieval")])
 const formSchema = z.object({
   name: z.string(),
   description: z.string(),
   instructions: z.string(),
-  tools: z.array(z.string()),
+  tools: z.array(tool),
 });
-
-import { useRouter, usePathname } from "next/navigation";
-import { useSearchParams } from "next/navigation";
-
-const useUrlState = () => {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-
-  const fetch = (param: string) => {
-    const params = new URLSearchParams(searchParams)
-    return params.get(param)
-  }
-
-  const update = useCallback(
-    (name: string, value: string) => {
-      const params = new URLSearchParams(searchParams)
-      params.set(name, value)
-      router.push(pathname + '?' + params.toString())
-    },
-    [searchParams]
-  )
-
-  return {
-    fetch,
-    update
-  }
-}
 
 export default function GptBuilderForm() {
   const url = useUrlState();
   const updateAssistant = api.assistant.update.useMutation();
   const createAssistant = api.assistant.create.useMutation();
   const debouncedAssistantUpsert = useDebounce(async () => { 
-    const id = url.fetch("id")
-    if (id) {
-      await updateAssistant.mutateAsync({ id, ...data })
+    const assistantId = url.fetch("aid")
+    if (assistantId) {
+      await updateAssistant.mutateAsync({ id: assistantId, ...data })
       console.log("assistant updated");
-    }
-    if (localStorage.getItem("openai-api-key")) {
+    } else if (localStorage.getItem("openai-api-key")) { 
       const assistant = await createAssistant.mutateAsync(data)
       url.update("id", assistant.id)
       console.log("assistant created");
     }
   })
+  const [timeUpdated, setTimeUpdated] = useState(new Date())
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -100,6 +74,7 @@ export default function GptBuilderForm() {
   useEffect(() => {
     if (form.formState.isValid && !form.formState.isValidating) {
       debouncedAssistantUpsert();
+      setTimeUpdated(new Date());
     }
   }, [form.formState, form.formState.isValidating, data])
 
@@ -178,8 +153,8 @@ export default function GptBuilderForm() {
             <div className="flex items-center gap-x-2">
               <FormControl>
                 <Checkbox
-                  checked={data.tools.includes("codeInterpreter")}
-                  onCheckedChange={(checked) => form.setValue("tools", AddRemoveArray(Boolean(checked), data.tools, "codeInterpreter"))}
+                  checked={data.tools.includes("code_interpreter")}
+                  onCheckedChange={(checked) => form.setValue("tools", AddRemoveArray<z.infer<typeof tool>>(Boolean(checked), data.tools, "code_interpreter"))}
                 />
               </FormControl>
 
@@ -191,8 +166,8 @@ export default function GptBuilderForm() {
             <div className="flex items-center gap-x-2">
               <FormControl>
                 <Checkbox
-                  checked={data.tools.includes("imageGeneration")}
-                  onCheckedChange={(checked) => form.setValue("tools", AddRemoveArray(Boolean(checked), data.tools, "codeInterpreter"))}
+                  // checked={data.tools.includes("image")}
+                  // onCheckedChange={(checked) => form.setValue("tools", AddRemoveArray(Boolean(checked), data.tools, "codeInterpreter"))}
                   disabled
                 />
               </FormControl>
@@ -216,6 +191,10 @@ export default function GptBuilderForm() {
           </FormItem>
         </form>
       </Form>
+
+      <div className="fixed bottom-0 left-0 w-1/2 flex justify-end text-xs px-4 py-2 border-t border-slate-300 text-slate-400">
+        Last Updated {getTime(timeUpdated)}
+      </div>
     </section>
   )
 }
