@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useEffect } from "react";
+import { useEffect, useCallback } from "react";
 import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
+import useDebounce from "@/hooks/useDebounce";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { api } from "~/trpc/react";
@@ -35,8 +36,50 @@ const formSchema = z.object({
   tools: z.array(z.string()),
 });
 
+import { useRouter, usePathname } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+
+const useUrlState = () => {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const fetch = (param: string) => {
+    const params = new URLSearchParams(searchParams)
+    return params.get(param)
+  }
+
+  const update = useCallback(
+    (name: string, value: string) => {
+      const params = new URLSearchParams(searchParams)
+      params.set(name, value)
+      router.push(pathname + '?' + params.toString())
+    },
+    [searchParams]
+  )
+
+  return {
+    fetch,
+    update
+  }
+}
+
 export default function GptBuilderForm() {
+  const url = useUrlState();
   const updateAssistant = api.assistant.update.useMutation();
+  const createAssistant = api.assistant.create.useMutation();
+  const debouncedAssistantUpsert = useDebounce(async () => { 
+    const id = url.fetch("id")
+    if (id) {
+      await updateAssistant.mutateAsync({ id, ...data })
+      console.log("assistant updated");
+    }
+    if (localStorage.getItem("openai-api-key")) {
+      const assistant = await createAssistant.mutateAsync(data)
+      url.update("id", assistant.id)
+      console.log("assistant created");
+    }
+  })
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -53,15 +96,10 @@ export default function GptBuilderForm() {
   }
 
   const data = form.watch();
-  console.log("data: ", data);
 
   useEffect(() => {
     if (form.formState.isValid && !form.formState.isValidating) {
-      debounce(() => {
-        // Need to think about how to get the assistantId in here
-        // will be used in multiple areas, so thinking about a global state
-        // updateAssistant.mutate(data)
-      }, 1000);
+      debouncedAssistantUpsert();
     }
   }, [form.formState, form.formState.isValidating, data])
 

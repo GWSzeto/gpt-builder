@@ -31,11 +31,18 @@ export const assistant = createTRPCRouter({
     }),
 
   create: publicProcedure
-    .mutation(async ({ ctx }) => {
+    .input(z.object({
+      name: z.string().min(1).optional(),
+      description: z.string().min(1).optional(),
+      instructions: z.string().min(1).optional(),
+      tools: z.array(z.string()).optional(),
+    }))
+    .mutation(async ({ input, ctx }) => {
       const data = await call({
         url: "https://api.openai.com/v1/assistants",
         apiKey: ctx.apiKey,
         body: {
+          ...input,
           model: "gpt-4-1106-preview",
         }
       });
