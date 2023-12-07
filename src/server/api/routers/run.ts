@@ -32,7 +32,6 @@ export const run = createTRPCRouter({
     .input(z.object({ threadId: z.string(), runId: z.string().min(1) }))
     .mutation(async ({ ctx, input }) => {
       const { threadId, runId } = input
-
       const data = await fetch(ctx.openai, threadId, runId)
 
       return data;

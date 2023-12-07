@@ -33,11 +33,24 @@ export default function GptInput() {
     }
     if (assistantId) {
       if (threadId) {
-        // TODO: show the run steps in the assistant message
-        const runSteps = await createMessage.mutateAsync({ threadId, assistantId, message: input })
-        const assistantMessage = runSteps[runSteps.length - 1]
-        assistantMessage.
+        const runSteps = await createMessage.mutateAsync({ 
+          threadId,
+          assistantId,
+          message: input,
+        })
+        const assistantContent = runSteps
+          .filter(runStep => runStep.type === "message_creation")
+          .map(runStep => runStep.content)
+        }
         
+      } else {
+        const runSteps = await createThreadAndRun.mutateAsync({ 
+          assistantId,
+          message: input,
+        })
+        const assistantContent = runSteps
+          .filter(runStep => runStep.type === "message_creation")
+          .map(runStep => runStep.content)
       }
     }
     

@@ -59,9 +59,7 @@ export const message = createTRPCRouter({
         })
       }, 1000))
       
-      // TODO: There will be a use case for pagination
-      // implement that
-      const { data } = await runSteps.list(ctx.openai, threadId, runId)
+      const data = await runSteps.list(ctx.openai, threadId, runId)
 
       return data
     }),
