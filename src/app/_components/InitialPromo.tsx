@@ -11,6 +11,7 @@ export default function InitialPromo() {
 
   useEffect(() => {
     setLocalLoaded(true);
+    setApiKeyExists(!!localStorage.getItem("openai-api-key"));
 
     const apiKeyExstsCheck = () => {
       setApiKeyExists(!!localStorage.getItem("openai-api-key"));

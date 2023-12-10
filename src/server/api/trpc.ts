@@ -6,7 +6,7 @@
  * TL;DR - This is where all the tRPC server stuff is created and plugged in. The pieces you will
  * need to use are documented accordingly near the end.
  */
-import { initTRPC } from "@trpc/server";
+import { TRPCError, initTRPC } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError } from "zod";
 import openAI from "openai";
@@ -25,8 +25,12 @@ import openAI from "openai";
  */
 export const createTRPCContext = async (opts: { headers: Headers }) => {
   const apiKey = opts.headers.get("x-openai-api-key") || "";
+  console.log("headers", opts.headers);
   if (!apiKey) {
-    throw new Error("missing openai api key");
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "Missing OpenAI API key",
+    });
   }
 
   return {

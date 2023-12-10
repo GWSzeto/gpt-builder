@@ -1,5 +1,6 @@
 import { useState, useEffect, FormEvent, Dispatch, SetStateAction } from "react";
 import { api } from "~/trpc/react";
+import type { Message } from "./GptChat";
 
 // utils
 import useUrlState from "@/hooks/useUrlState";
@@ -7,14 +8,14 @@ import useUrlState from "@/hooks/useUrlState";
 // components
 import EnterApiKey from "@/components/EnterApiKey";
 import { Input } from "@/components/ui/input";
-import type { Message } from "./GptChat";
 
 export default function GptInput({ setMessages }: { setMessages: Dispatch<SetStateAction<Message[]>>}) {
   const [open, setOpen] = useState<boolean>(false);
   const [input, setInput] = useState<string>("");
   const [localLoaded, setLocalLoaded] = useState<boolean>(false);
   const url = useUrlState()
-
+  
+  const createAssistant = api.assistant.create.useMutation();
   const createThreadAndRun = api.thread.createAndRun.useMutation();
   const createMessage = api.message.create.useMutation();
 
@@ -41,7 +42,16 @@ export default function GptInput({ setMessages }: { setMessages: Dispatch<SetSta
       const assistantId = url.fetch("aid")
 
       if (input.length === 0) return;
-      if (localStorage.getItem("openai-api-key") === null) {
+      
+      // TODO: Think about how to handle this state properly
+      // Should it show an error message if it can't get the assistant message properly?
+      setMessages(messages => [...messages, { 
+        id: crypto.randomUUID(),
+        role: "user",
+        content: input
+      }])
+
+      if (!localStorage.getItem("openai-api-key")) {
         setOpen(true);
         return
       }
@@ -53,6 +63,11 @@ export default function GptInput({ setMessages }: { setMessages: Dispatch<SetSta
         console.log("assistant content:", assistantContent)
         // TODO: Look into how run steps.list works and work out the edge cases for this
         setMessages(messages => [...messages, assistantContent!])
+      } else {
+        const { id } = await createAssistant.mutateAsync({})
+        url.update("aid", id)
+        // TODO: do the above
+        // Create thread, create message and then run via assistant
       }
       
       setInput("");
