@@ -1,53 +1,56 @@
+'use client';
+
+import { useState } from "react";
 
 // components
+import InitialPromo from "./InitialPromo";
 import GptInput from "./GptInput";
 
 // icons
-import { CheckCircledIcon } from "@radix-ui/react-icons"; 
+import HumanIcon from "@/icons/human";
+import ChatGptIcon from "@/icons/chatGpt";
+
+export type Message = {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+}
 
 export default function GptChat() {
+  const [messages, setMessages] = useState<Message[]>([]); 
+  
   return (
     <section className="relative w-1/2 flex-col px-8 py-4">
-      <div className="absolute inset-0 grid place-items-center">
-        <div className="p-8 flex flex-col items-center gap-y-10">
-          <h1 className="text-4xl font-extrabold">GPT Builder</h1>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div className="flex items-center gap-x-2">
-              <CheckCircledIcon className="h-4 w-4 text-green-500" />
-              <span className="text-sm text-slate-950 dark:text-slate-50">
-                No monthly fee, no usage limit
-              </span>
-            </div>
-
-            <div className="flex items-center gap-x-2">
-              <CheckCircledIcon className="h-4 w-4 text-green-500" />
-              <span className="text-sm text-slate-950 dark:text-slate-50">
-                Use your own API key
-              </span>
-            </div>
-
-            <div className="flex items-center gap-x-2">
-              <CheckCircledIcon className="h-4 w-4 text-green-500" />
-              <span className="text-sm text-slate-950 dark:text-slate-50">
-                Chat folders, search, export
-              </span>
-            </div>
-
-            <div className="flex items-center gap-x-2">
-              <CheckCircledIcon className="h-4 w-4 text-green-500" />
-              <span className="text-sm text-slate-950 dark:text-slate-50">
-                New features every week
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <GptInput />
+      <InitialPromo />
       
+      <div className="flex flex-col gap-y-12">
+        {messages.map(({ id, role, content }) => (
+          <div className="flex flex-col gap-y-2" key={id}>
+            <div className="flex items-center gap-x-2">
+              {role === "user" ? (
+                <div className="p-1 bg-gray-200 rounded-full flex items-center justify-center text-gray-500">
+                  <HumanIcon className="w-4 h-4" /> 
+                </div>
+              ) : (
+                <div className="p-1 bg-[#ab68ff] rounded-full flex items-center justify-center text-white">
+                  <ChatGptIcon className="w-4 h-4"/>
+                </div>
+              )}
+
+              <span className="font-semibold text-slate-950 dark:text-slate-50">
+                {role === "user" ? "You" : "GPT"}
+              </span>
+            </div>
+            
+            <span className="ml-8 text-slate-950 dark:text-slate-50">
+              {content}
+            </span>
+          </div>
+        ))}
+      </div>
+      
+      <GptInput setMessages={setMessages} />
     </section>
   )
 }
-
 

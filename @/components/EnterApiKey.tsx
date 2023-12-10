@@ -1,5 +1,7 @@
-import { type Dispatch, type SetStateAction, useState } from "react";
-import { api } from "~/trpc/react";
+import type { Dispatch, SetStateAction } from "react";
+
+// utils
+import useApiKeyStorage from "@/hooks/useApiKeyStorage";
 
 // components
 import { Button } from "@/components/ui/button";
@@ -17,11 +19,11 @@ type EnterApiKeyProps = {
   setOpen: Dispatch<SetStateAction<boolean>>,
 }
 export default function EnterApiKey({ open, setOpen }: EnterApiKeyProps) {
-  const [apiKey, setApiKey] = useState<string>("");
+  const [apiKey, setApiKey] = useApiKeyStorage();
 
   const saveApikey = () => {
-    if (apiKey.length === 0) return;
-    localStorage.setItem("openai-api-key", apiKey);
+    if (!apiKey) return;
+    setApiKey(apiKey);
     setOpen(false);
   }
 
