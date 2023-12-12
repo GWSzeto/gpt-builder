@@ -77,11 +77,12 @@ export default function GptBuilderForm() {
     console.log("Data: ", data)
   }
   
-  useDeepCompareEffect(() => {
+ useDeepCompareEffect(() => {
     if (form.formState.isDirty) {
       debouncedUpdateAssistant(data)
     }
   }, [data])
+ 
   useEffect(() => { setTimeUpdated(new Date()) }, [])
 
   return (
