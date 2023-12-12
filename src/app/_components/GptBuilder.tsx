@@ -1,16 +1,17 @@
 'use client'
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
 import useDebounce from "@/hooks/useDebounce";
-import { useForm } from "react-hook-form";
+import { useForm, type SubmitHandler } from "react-hook-form";
 import * as z from "zod";
 import { api } from "~/trpc/react";
+import { useQueryState } from "next-usequerystate";
+import debounce from "lodash.debounce";
 
 // utils
 import { AddRemoveArray, getTime } from "@/lib/utils";
-import useUrlState from "@/hooks/useUrlState";
 
 // components
 import AssistantsMenu from "./AssistantsMenu";
@@ -39,21 +40,10 @@ const formSchema = z.object({
 });
 
 export default function GptBuilderForm() {
-  const url = useUrlState();
+  const [assistantId, setAssistantId] = useQueryState("aid")
+  const [timeUpdated, setTimeUpdated] = useState<Date | null>(null)
   const updateAssistant = api.assistant.update.useMutation();
   const createAssistant = api.assistant.create.useMutation();
-  const debouncedAssistantUpsert = useDebounce(async () => { 
-    const assistantId = url.fetch("aid")
-    if (assistantId) {
-      await updateAssistant.mutateAsync({ id: assistantId, ...data })
-      console.log("assistant updated");
-    } else if (localStorage.getItem("openai-api-key")) { 
-      const assistant = await createAssistant.mutateAsync(data)
-      url.update("id", assistant.id)
-      console.log("assistant created");
-    }
-  })
-  const [timeUpdated, setTimeUpdated] = useState(new Date())
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -65,18 +55,31 @@ export default function GptBuilderForm() {
     },
   });
 
-  const onSubmit = (data: z.infer<typeof formSchema>) => {
-    console.log(data);
-  }
-
   const data = form.watch();
+ 
+ const onSubmit = useCallback(debounce(async (data: z.infer<typeof formSchema>) => {
+    try {
+      formSchema.parse(data)
+      console.log("data: ", data)
+      if (assistantId) {
+        await updateAssistant.mutateAsync({ id: assistantId, ...data });
+      } else if (localStorage.getItem("openai-api-key")) { 
+        const assistant = await createAssistant.mutateAsync(data);
+        setAssistantId(assistant.id);
+      }
+
+      setTimeUpdated(new Date());
+    } catch(error: any) {
+      // TODO: Handle error
+    }
+  }, 1000), [])
 
   useEffect(() => {
     if (form.formState.isValid && !form.formState.isValidating) {
-      debouncedAssistantUpsert();
-      setTimeUpdated(new Date());
+      onSubmit(data);
     }
   }, [form.formState, form.formState.isValidating, data])
+  useEffect(() => { setTimeUpdated(new Date()) }, [])
 
   return (
     <section className="w-1/2 flex flex-col border-r border-r-slate-300">
@@ -87,7 +90,7 @@ export default function GptBuilderForm() {
       </header>
       
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-y-6 px-8 py-4">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-y-6 px-8 py-4 mb-[32px]">
           <FormField
             control={form.control}
             name="name"
@@ -191,10 +194,12 @@ export default function GptBuilderForm() {
           </FormItem>
         </form>
       </Form>
-
-      <div className="fixed bottom-0 left-0 w-1/2 flex justify-end text-xs px-4 py-2 border-t border-slate-300 text-slate-400">
-        Last Updated {getTime(timeUpdated)}
-      </div>
+      
+      {timeUpdated && (
+        <div className="fixed bottom-0 left-0 w-1/2 h-[32px] flex justify-end items-center text-xs px-4 border-t border-slate-300 text-slate-400 bg-slate-50 border-r border-r-slate-300">
+          Last Updated {getTime(timeUpdated)}
+        </div>
+      )}
     </section>
   )
 }

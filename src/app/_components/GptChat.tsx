@@ -18,7 +18,6 @@ export type Message = {
 
 export default function GptChat() {
   const [messages, setMessages] = useState<Message[]>([]); 
-  console.log("messages: ", messages);
   
   return (
     <section className="relative w-1/2 flex-col px-8 py-4">

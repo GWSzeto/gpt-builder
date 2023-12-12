@@ -1,8 +1,8 @@
 import { useRef, useEffect, useMemo } from "react"
-import { debounce } from "@/lib/utils";
+import debounce from "lodash.debounce";
 
-type Func = () => void;
-export default function useDebounce(callback: Func) {
+type Func = (...args: any[]) => void;
+export default function useDebounce(callback: Func, ...args: any[]) {
   const ref = useRef<Func>();
 
   useEffect(() => {
@@ -11,11 +11,11 @@ export default function useDebounce(callback: Func) {
 
   const debouncedCallback = useMemo(() => {
     const func = () => {
-      ref.current?.();
+      ref.current?.(args);
     };
 
     return debounce(func, 1000);
-  }, []);
+  }, [args]);
 
   return debouncedCallback;
 };

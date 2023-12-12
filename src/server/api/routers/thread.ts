@@ -26,7 +26,7 @@ export const thread = createTRPCRouter({
       
       const data = await runSteps.list(ctx.openai, threadId, runId)
 
-      return data
+      return { threadId, runSteps: data }
     }),
 
 });

@@ -6,7 +6,14 @@ import * as message from "./message";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 
-export const list = async (openai: OpenAI, threadId: string, runId: string) => {
+export type RunStep = {
+  id: string;
+  type: string;
+  role: "user" | "assistant";
+  content: string;
+}
+
+export const list = async (openai: OpenAI, threadId: string, runId: string): Promise<RunStep[]> => {
   // TODO: There will be a use case for pagination
   // implement that
   const { data, /*lastId*/ } = await openai.beta.threads.runs.steps.list(threadId, runId)

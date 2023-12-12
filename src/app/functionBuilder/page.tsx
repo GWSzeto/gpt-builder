@@ -72,7 +72,6 @@ const Viewer = () => {
     ...acc,
     [curr.name]: parseFunctionParameters(curr),
   }), {} as Record<string, any>)
-  console.log("function map: ", functionMap)
 
   const functionValue = {
     type: "function",
