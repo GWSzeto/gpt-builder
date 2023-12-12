@@ -4,7 +4,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { loggerLink, unstable_httpBatchStreamLink } from "@trpc/client";
 import { createTRPCReact } from "@trpc/react-query";
 import { useState } from "react";
-import useApiKeyStorage from "@/hooks/useApiKeyStorage";
 
 import { type AppRouter } from "~/server/api/root";
 import { getUrl, transformer } from "./shared";
@@ -16,7 +15,6 @@ export function TRPCReactProvider(props: {
   cookies: string;
 }) {
   const [queryClient] = useState(() => new QueryClient());
-  const [apiKey] = useApiKeyStorage();
 
   const [trpcClient] = useState(() =>
     api.createClient({
@@ -33,9 +31,17 @@ export function TRPCReactProvider(props: {
             return {
               cookie: props.cookies,
               "x-trpc-source": "react",
-              "x-openai-api-key": apiKey,
             };
           },
+          fetch: (url, options) => {
+            return fetch(url, {
+              ...options,
+              headers: {
+                ...options.headers,
+                "x-openai-api-key": localStorage.getItem("openai-api-key"),
+              },
+            })
+          }
         }),
       ],
     })
