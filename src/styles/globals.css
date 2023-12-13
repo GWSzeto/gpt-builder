@@ -74,3 +74,8 @@
     @apply bg-background text-foreground;
   }
 }
+
+.sidebar {
+   transition: width .15s cubic-bezier(0,.57,.21,.99),box-shadow .15s cubic-bezier(0,.57,.21,.99)
+}
+

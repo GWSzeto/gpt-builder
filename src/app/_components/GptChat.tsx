@@ -35,7 +35,7 @@ export default function GptChat() {
   )
   
   return (
-    <section className="relative w-1/2 flex-col px-8 py-20">
+    <section className="relative w-[calc(50%-50px)] flex-col px-8 py-20">
       <InitialPromo />
       
       <div className="flex flex-col gap-y-12">

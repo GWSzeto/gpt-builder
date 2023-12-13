@@ -7,6 +7,9 @@ module.exports = {
     './app/**/*.{ts,tsx}',
     './src/**/*.{ts,tsx}',
 	],
+  variants: {
+    width: ["responsive", "hover", "focus"],
+  },
   theme: {
     container: {
       center: true,

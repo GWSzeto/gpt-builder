@@ -36,7 +36,7 @@ const formSchema = z.object({
   name: z.string().optional(),
   description: z.string().optional(),
   instructions: z.string().optional(),
-  tools: z.array(tool).optional(),
+  tools: z.array(tool).default([]),
 });
 
 export default function GptBuilderForm() {
@@ -103,7 +103,7 @@ export default function GptBuilderForm() {
   useEffect(() => { setTimeUpdated(new Date()) }, [])
 
   return (
-    <section className="w-1/2 flex flex-col border-r border-r-slate-300">
+    <section className="w-[calc(50%-50px)] flex flex-col border-r border-r-slate-300">
       <header className="flex justify-between px-8 py-4 border-b border-slate-300">
         <AssistantsMenu />
 

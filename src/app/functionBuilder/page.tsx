@@ -22,7 +22,7 @@ import {
 
 const FunctionBuilderForm = () => {
   return (
-    <section className="w-1/2 flex flex-col border-r border-r-slate-300 overflow-x-auto">
+    <section className="w-[calc(50%-50px)] flex flex-col border-r border-r-slate-300 overflow-x-auto">
       <header className="flex px-8 py-4 border-b border-slate-300">
         <Link href="/">
           <Button variant="outline" size="icon">
