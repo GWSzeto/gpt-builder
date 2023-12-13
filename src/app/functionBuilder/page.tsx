@@ -22,7 +22,7 @@ import {
 
 const FunctionBuilderForm = () => {
   return (
-    <section className="w-[calc(50%-50px)] flex flex-col border-r border-r-slate-300 overflow-x-auto">
+    <section className="w-[calc(50%-27.5px)] flex flex-col border-r border-r-slate-300 overflow-x-auto">
       <header className="flex px-8 py-4 border-b border-slate-300">
         <Link href="/">
           <Button variant="outline" size="icon">
@@ -86,7 +86,7 @@ const Viewer = () => {
   }
 
   return (
-    <section className="relative w-1/2 flex-col px-8 py-4">
+    <section className="relative w-[calc(50%-27.5px)] flex-col px-8 py-4">
       <SyntaxHighlighter language="json" style={twilight} customStyle={{ border: 0, margin: 0, height: "100%" }}>
         {JSON.stringify(functionValue, null, 2)}
       </SyntaxHighlighter>

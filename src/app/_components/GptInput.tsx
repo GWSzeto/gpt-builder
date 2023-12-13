@@ -86,7 +86,7 @@ export default function GptInput({ setMessages }: { setMessages: Dispatch<SetSta
   }, [])
 
   return (
-    <form onSubmit={onSubmit} className="fixed w-[calc(50%-50px)] bottom-0 right-0 px-8 py-4">
+    <form onSubmit={onSubmit} className="fixed w-[calc(50%-27.5px)] bottom-0 right-0 px-8 py-4">
       <EnterApiKey open={open} setOpen={setOpen} />
       <Input
         className="bg-slate-50"

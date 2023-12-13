@@ -103,7 +103,7 @@ export default function GptBuilderForm() {
   useEffect(() => { setTimeUpdated(new Date()) }, [])
 
   return (
-    <section className="w-[calc(50%-50px)] flex flex-col border-r border-r-slate-300">
+    <section className="relative w-1/2 flex flex-col border-r border-r-slate-300">
       <header className="flex justify-between px-8 py-4 border-b border-slate-300">
         <AssistantsMenu />
 
@@ -216,11 +216,9 @@ export default function GptBuilderForm() {
         </form>
       </Form>
       
-      {timeUpdated && (
-        <div className="fixed bottom-0 left-0 w-1/2 h-[32px] flex justify-end items-center text-xs px-4 border-t border-slate-300 text-slate-400 bg-slate-50 border-r border-r-slate-300">
-          Last Updated {getTime(timeUpdated)}
-        </div>
-      )}
+      <div className="fixed left-[55px] bottom-0 w-[calc(50%-27.5px)] h-[32px] flex justify-end items-center text-xs px-4 border-t border-slate-300 text-slate-400 bg-slate-50 border-r border-r-slate-300">"
+        Last Updated {timeUpdated ? getTime(timeUpdated) : ""}
+      </div>
     </section>
   )
 }

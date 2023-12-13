@@ -31,7 +31,7 @@ const Sidebar = React.forwardRef<
   return (
     <div
       ref={ref}
-      className={cn(`sidebar fixed top-0 left-0 bottom-0 right-0 z-10 w-[50px] h-screen bg-gray-700 ${isHovered ? cn('w-[225px] shadow-2xl', hoverClassName) : ''}`, className)}
+      className={cn(`sidebar fixed top-0 left-0 bottom-0 right-0 z-10 w-[55px] h-screen bg-gray-700 ${isHovered ? cn('w-[225px] shadow-2xl', hoverClassName) : ''}`, className)}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       {...props}

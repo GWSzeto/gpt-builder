@@ -27,7 +27,7 @@ export default function InitialPromo() {
   if (!localLoaded) return null;
   
   if (apiKeyExists) return (
-    <div className="fixed w-1/2 top-0 left-1/2 px-8 py-4 bg-slate-50 opacity-80">
+    <div className="fixed w-[calc(50%-27.5px)] top-0 left-[calc(50%+27.5px)] px-8 py-4 bg-slate-50 opacity-80">
       <h1 className="text-2xl font-extrabold">GPT Builder</h1>
     </div>
   )
