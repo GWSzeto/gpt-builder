@@ -1,4 +1,4 @@
-'use client'
+import { api } from "~/trpc/react";
 
 // components
 import {
@@ -13,7 +13,10 @@ import { Button } from "@/components/ui/button";
 // icons
 import { HamburgerMenuIcon } from "@radix-ui/react-icons"; 
 
-export default function AssistantsMenu() {
+export default async function AssistantsMenu() {
+  
+  const assistants = api.assistant.list.useQuery({})
+
   return (
     <Sheet>
       <SheetTrigger asChild>

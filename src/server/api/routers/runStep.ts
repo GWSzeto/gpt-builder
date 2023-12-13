@@ -8,7 +8,7 @@ import { TRPCError } from "@trpc/server";
 
 export type RunStep = {
   id: string;
-  type: string;
+  type: "message_creation" | "tool_calls";
   role: "user" | "assistant";
   content: string;
 }

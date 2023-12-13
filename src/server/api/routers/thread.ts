@@ -6,6 +6,15 @@ import * as runSteps from "./runStep";
 
 export const thread = createTRPCRouter({
 
+  fetch: publicProcedure
+    .input(z.object({ threadId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const { threadId } = input
+      const data = await ctx.openai.beta.threads.retrieve(threadId)
+
+      return data
+    }),
+
   createAndRun: publicProcedure
     .input(z.object({ assistantId: z.string().min(1), message: z.string().min(1) }))
     .mutation(async ({ ctx, input }) => {

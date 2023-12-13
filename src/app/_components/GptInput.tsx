@@ -89,6 +89,7 @@ export default function GptInput({ setMessages }: { setMessages: Dispatch<SetSta
     <form onSubmit={onSubmit} className="fixed w-1/2 bottom-0 right-0 px-8 py-4">
       <EnterApiKey open={open} setOpen={setOpen} />
       <Input
+        className="bg-slate-50"
         disabled={!localLoaded}
         placeholder="Type here..."
         onChange={e => setInput(e.target.value)}

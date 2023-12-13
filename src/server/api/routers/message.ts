@@ -5,11 +5,28 @@ import * as run from "./run";
 import * as runSteps from "./runStep";
 
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
+import { MessageContentText, ThreadMessage } from "openai/resources/beta/threads/messages/messages.mjs";
 
 export const fetch = async (openai: OpenAI, thread_id: string, message_id: string) => {
   const data = await openai.beta.threads.messages.retrieve(thread_id, message_id)
 
   return data
+}
+
+export type Message = {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+}
+
+// TODO: handle file implementations passed back from the assistant
+const parseMessages = (messages: ThreadMessage[]) => {
+  return messages.map(message => ({
+    id: message.id,
+    role: message.role,
+    content: (message.content.find(content => content.type === "text") as MessageContentText)?.text?.value || "",
+    // fileIds: message.file_ids, TODO: implement file handling
+  }))
 }
 
 export const message = createTRPCRouter({
@@ -24,15 +41,18 @@ export const message = createTRPCRouter({
     }),
 
   list: publicProcedure
-    .input(z.object({ runId: z.string(), after: z.string().optional() }))
+    .input(z.object({ threadId: z.string(), after: z.string().optional() }))
     .query(async ({ ctx, input }) => {
-      const { runId, after } = input
-      const data = await ctx.openai.beta.threads.messages.list(runId, {
+      const { threadId, after } = input;
+      const { data, last_id, has_more } = await ctx.openai.beta.threads.messages.list(threadId, {
         limit: 100,
+        order: "asc",
         after,
-      })
+      });
 
-      return data
+      const parsedMessages = parseMessages(data);
+
+      return parsedMessages;
     }),
 
   create: publicProcedure

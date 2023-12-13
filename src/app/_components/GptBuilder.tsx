@@ -31,7 +31,7 @@ import {
 // icons
 import { PlusCircledIcon } from "@radix-ui/react-icons"; 
 
-const tool = z.union([z.literal("code_interpreter"), z.literal("retrieval")])
+const tool = z.union([z.literal("code_interpreter"), z.literal("retrieval"), z.literal("function")])
 const formSchema = z.object({
   name: z.string().optional(),
   description: z.string().optional(),
@@ -42,8 +42,26 @@ const formSchema = z.object({
 export default function GptBuilderForm() {
   const [assistantId, setAssistantId] = useQueryState("aid")
   const [timeUpdated, setTimeUpdated] = useState<Date | null>(null)
+
+  api.assistant.fetch.useQuery(
+    { id: assistantId! },
+    {
+      enabled: !!assistantId,
+      // TODO: This will be deprecated soon, think about how to deal with this
+      // May need to shove this into it's own useEffect
+      onSuccess: (data) => {
+        form.reset({
+          name: data.name || "",
+          description: data.description || "",
+          instructions: data.instructions || "",
+          tools: data.tools.map(({ type }) => type) || [],
+        });
+      }
+    }
+  );
   const updateAssistant = api.assistant.update.useMutation();
   const createAssistant = api.assistant.create.useMutation();
+
   const debouncedUpdateAssistant = useDebounce(async (data: z.infer<typeof formSchema>) => {
     try {
       formSchema.parse(data)

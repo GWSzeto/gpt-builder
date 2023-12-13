@@ -1,6 +1,10 @@
 'use client';
 
 import { useState } from "react";
+import { useQueryState } from "next-usequerystate";
+
+// utils
+import { api } from "~/trpc/react";
 
 // components
 import InitialPromo from "./InitialPromo";
@@ -18,12 +22,23 @@ export type Message = {
 
 export default function GptChat() {
   const [messages, setMessages] = useState<Message[]>([]); 
+  const [threadId] = useQueryState("tid");
+
+  api.message.list.useQuery(
+    { threadId: threadId! },
+    { 
+      enabled: !!threadId,
+      onSuccess: (data) => {
+        setMessages(data);
+      }
+    },
+  )
   
   return (
-    <section className="relative w-1/2 flex-col px-8 py-4">
+    <section className="relative w-1/2 flex-col px-8 py-20">
       <InitialPromo />
       
-      <div className="flex flex-col gap-y-12 mt-16">
+      <div className="flex flex-col gap-y-12">
         {messages.map(({ id, role, content }) => (
           <div className="flex flex-col gap-y-2" key={id}>
             <div className="flex items-center gap-x-2">

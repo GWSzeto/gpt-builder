@@ -12,7 +12,7 @@ export const assistant = createTRPCRouter({
       return data
     }),
 
-  get: publicProcedure
+  fetch: publicProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ input, ctx }) => {
       const data = await ctx.openai.beta.assistants.retrieve(input.id)
@@ -25,7 +25,7 @@ export const assistant = createTRPCRouter({
       name: z.string().optional(),
       description: z.string().optional(),
       instructions: z.string().optional(),
-      tools: z.array(z.union([z.literal("code_interpreter"), z.literal("retrieval")])).optional(),
+      tools: z.array(z.union([z.literal("code_interpreter"), z.literal("retrieval"), z.literal("function")])).optional(),
     }))
     .mutation(async ({ input, ctx }) => {
       const data = await ctx.openai.beta.assistants.create({
@@ -40,10 +40,10 @@ export const assistant = createTRPCRouter({
   update: publicProcedure
     .input(z.object({
       id: z.string(),
-      name: z.string().min(1).optional(),
-      description: z.string().min(1).optional(),
-      instructions: z.string().min(1).optional(),
-      tools: z.array(z.union([z.literal("code_interpreter"), z.literal("retrieval")])).optional(),
+      name: z.string().optional(),
+      description: z.string().optional(),
+      instructions: z.string().optional(),
+      tools: z.array(z.union([z.literal("code_interpreter"), z.literal("retrieval"), z.literal("function")])).optional(),
     }))
     .mutation(async ({ input, ctx }) => {
       const { id, ...body } = input
