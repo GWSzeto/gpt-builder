@@ -14,7 +14,6 @@ import { AddRemoveArray, getTime } from "@/lib/utils";
 import useDebounce from "@/hooks/useDebounce";
 
 // components
-import AssistantsMenu from "./AssistantsMenu";
 import ExportCode from "./ExportCode";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -42,6 +41,8 @@ const formSchema = z.object({
 export default function GptBuilderForm() {
   const [assistantId, setAssistantId] = useQueryState("aid")
   const [timeUpdated, setTimeUpdated] = useState<Date | null>(null)
+
+  console.log("assistantId: ", assistantId)
 
   api.assistant.fetch.useQuery(
     { id: assistantId! },
@@ -104,9 +105,7 @@ export default function GptBuilderForm() {
 
   return (
     <section className="relative w-1/2 flex flex-col border-r border-r-slate-300">
-      <header className="flex justify-between px-8 py-4 border-b border-slate-300">
-        <AssistantsMenu />
-
+      <header className="flex justify-end px-8 py-4 border-b border-slate-300">
         <ExportCode nodeCode={"const asd = () => console.log('asd')"} pythonCode={"print('dsa')"}/>
       </header>
       
