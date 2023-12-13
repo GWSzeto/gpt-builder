@@ -36,39 +36,41 @@ const Sidebar = React.forwardRef<
     clearTimeout(hoverTimeout!);
     setIsHovered(false);
   };
-
+  
   return (
-    <div
-      ref={ref}
-      className={cn(`sidebar fixed top-0 left-0 bottom-0 right-0 z-10 w-[55px] h-screen bg-gray-700 ${isHovered ? cn('w-[225px] shadow-2xl', hoverClassName) : ''}`, className)}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      {...props}
-    >
+    <>
       <AssistantsMenu open={assistantsMenuOpen} setOpen={setAssistantsMenuOpen} />
-      <Button
-        onClick={() => { 
-          setAssistantsMenuOpen(true);
-          setIsHovered(false);
-        }}
-        variant="ghost"
-        className="flex justify-start items-center max-w-full overflow-hidden gap-x-3 p-2"
+      <div
+        ref={ref}
+        className={cn(`sidebar fixed top-0 left-0 bottom-0 right-0 z-10 w-[55px] h-screen bg-gray-700 ${assistantsMenuOpen ? "hidden" : ""} ${isHovered ? cn("w-[225px] shadow-2xl", hoverClassName) : ''}`, className)}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        {...props}
       >
-        <div className="flex items-center" >
-          <RobotIcon className="w-5 h-5 text-slate-600"/>       
-        </div>    
-        <div className="text-sm text-slate-600 dark:text-slate-50">Assistants</div>
-      </Button>
-      <Button
-        variant="ghost"
-        className="flex justify-start items-center max-w-full overflow-hidden gap-x-3 p-2"
-      >
-        <div className="flex items-center" >
-          <CounterClockwiseClockIcon className="w-5 h-5 text-slate-600"/>
-        </div>    
-        <div className="text-sm text-slate-600 dark:text-slate-50">History</div>
-      </Button>
-    </div>
+        <Button
+          onClick={() => { 
+            setAssistantsMenuOpen(true);
+            setIsHovered(false);
+          }}
+          variant="ghost"
+          className="flex justify-start items-center max-w-full overflow-hidden gap-x-3 p-2"
+        >
+          <div className="flex items-center" >
+            <RobotIcon className="w-5 h-5 text-slate-600"/>       
+          </div>    
+          <div className="text-sm text-slate-600 dark:text-slate-50">Assistants</div>
+        </Button>
+        <Button
+          variant="ghost"
+          className="flex justify-start items-center max-w-full overflow-hidden gap-x-3 p-2"
+        >
+          <div className="flex items-center" >
+            <CounterClockwiseClockIcon className="w-5 h-5 text-slate-600"/>
+          </div>    
+          <div className="text-sm text-slate-600 dark:text-slate-50">History</div>
+        </Button>
+      </div>
+    </>
   )
 })
 

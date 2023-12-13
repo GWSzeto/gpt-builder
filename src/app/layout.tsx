@@ -24,7 +24,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`font-sans ${inter.variable} ml-[55px]`}>
+      <body className={`font-sans ${inter.variable}`}>
         <TRPCReactProvider cookies={cookies().toString()}>
           <Sidebar className="flex flex-col bg-slate-50 border-r border-r-slate-300 gap-y-2 py-4 px-2" /> 
           {children}
