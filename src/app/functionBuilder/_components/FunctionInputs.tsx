@@ -44,6 +44,7 @@ export const Obj = ({ parentName }: { parentName: "functions" }) => {
       {fieldArray.fields.map((field, i) => (
         <div className="relative flex flex-col gap-y-6" key={field.id}>
           {i !== 0 && <Separator className="my-6" />}
+
           <FormField
             control={form.control}
             name={`${parentName}.${i}.name`}
@@ -53,14 +54,18 @@ export const Obj = ({ parentName }: { parentName: "functions" }) => {
                   <FormLabel className="text-sm font-medium text-slate-950 dark:text-slate-50">
                     Name
                   </FormLabel>
-                  <Button
-                    onClick={() => fieldArray.remove(i)}
-                    variant="outline"
-                    size="icon"
-                    className="absolute top-0 right-0 rounded-full h-auto w-auto p-1"
-                  >
-                    <MinusCircledIcon className="h-4 w-4" />
-                  </Button>
+
+                  {i !== 0 && (
+                    <Button
+                      onClick={() => fieldArray.remove(i)}
+                      variant="outline"
+                      size="icon"
+                      type="button"
+                      className="absolute top-0 right-0 rounded-full h-auto w-auto p-1"
+                    >
+                      <MinusCircledIcon className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
                 <FormControl>
                   <Input {...field} className="w-[260px]" />
@@ -88,15 +93,14 @@ export const Obj = ({ parentName }: { parentName: "functions" }) => {
           <FunctionInputs parentName={`${parentName}.${i}`} />
         </div>
       ))}
-
+      
       <Button 
+        type="button"
         onClick={() => fieldArray.append({
           name: "",
           description: "",
           type: "string",
           enum: [],
-          properties: [],
-          items: {},
         })}
         variant="outline"
         className="flex items-center gap-x-2 self-start"
@@ -113,6 +117,40 @@ const FunctionInputs = ({ parentName }: { parentName: `functions.${number}` }) =
 
   const parentValues = form.watch(parentName);
 
+  const updateField = (type: string) => {
+    const baseData = {
+      name: parentValues.name,
+      description: parentValues.description,
+    }
+
+    if (type === "string") {
+      form.setValue(parentName, {
+        ...baseData,
+        enum: [],
+      })
+    } else if (type === "object") {
+      form.setValue(parentName, {
+        ...baseData,
+        properties: [{
+          name: "",
+          description: "",
+          type: "string",
+          enum: [],
+        }],
+      })
+    } else if (type === "array") { 
+      form.setValue(parentName, {
+        ...baseData,
+        items: {
+          type: "string",
+          enum: [],
+        }
+      })
+    } else {
+      form.setValue(parentName, baseData)
+    }
+  }
+
   return (
     <>
       <FormField
@@ -124,7 +162,13 @@ const FunctionInputs = ({ parentName }: { parentName: `functions.${number}` }) =
               Type
             </FormLabel>
 
-            <Select onValueChange={field.onChange} defaultValue={field.value}  >
+            <Select
+              onValueChange={type => {
+                updateField(type)
+                field.onChange(type)
+              }}
+              defaultValue={field.value}
+            >
               <FormControl>
                 <SelectTrigger className="w-[260px]" >
                   <SelectValue />
@@ -142,7 +186,7 @@ const FunctionInputs = ({ parentName }: { parentName: `functions.${number}` }) =
           </FormItem>
         )}
       />
-      
+     
       {parentValues?.type === "string" && (
         <FormField
           control={form.control}

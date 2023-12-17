@@ -22,6 +22,13 @@ export function AddRemoveArray<T>(flag: boolean, arr: T[], item: T) {
   }
 }
 
+export function urlBuilder(url: string, searchParams: string) {
+  return `${url}${searchParams}`;
+}
+
+export function deepCompare(obj1: object, obj2: object) {
+  return JSON.stringify(obj1) === JSON.stringify(obj2);
+}
 
 // TIME
 

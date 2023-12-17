@@ -10,7 +10,7 @@ import { useQueryState } from "next-usequerystate";
 import useDeepCompareEffect from "use-deep-compare-effect";
 
 // utils
-import { AddRemoveArray, getTime } from "@/lib/utils";
+import { AddRemoveArray, getTime, urlBuilder } from "@/lib/utils";
 import useDebounce from "@/hooks/useDebounce";
 
 // components
@@ -42,8 +42,6 @@ export default function GptBuilderForm() {
   const [assistantId, setAssistantId] = useQueryState("aid")
   const [timeUpdated, setTimeUpdated] = useState<Date | null>(null)
 
-  console.log("assistantId: ", assistantId)
-
   api.assistant.fetch.useQuery(
     { id: assistantId! },
     {
@@ -52,10 +50,10 @@ export default function GptBuilderForm() {
       // May need to shove this into it's own useEffect
       onSuccess: (data) => {
         form.reset({
-          name: data.name || "",
-          description: data.description || "",
-          instructions: data.instructions || "",
-          tools: data.tools.map(({ type }) => type) || [],
+          name: data.name ?? "",
+          description: data.description ?? "",
+          instructions: data.instructions ?? "",
+          tools: data.tools.map(({ type }) => type) ?? [],
         });
       }
     }
@@ -71,11 +69,11 @@ export default function GptBuilderForm() {
         await updateAssistant.mutateAsync({ id: assistantId, ...data });
       } else if (localStorage.getItem("openai-api-key")) { 
         const assistant = await createAssistant.mutateAsync(data);
-        setAssistantId(assistant.id);
+        await setAssistantId(assistant.id);
       }
 
       setTimeUpdated(new Date());
-    } catch(error: any) {
+    } catch(error: unknown) {
       // TODO: Handle error
     }
   })
@@ -200,22 +198,23 @@ export default function GptBuilderForm() {
               </FormLabel>
             </div>
           </div>
-
+          
           <FormItem className="flex flex-col gap-1">
             <h3 className="text-sm font-medium text-slate-950 dark:text-slate-50">
               Functions
             </h3>
-            <Link href="/functionBuilder" className="self-start">
+            <Link href={urlBuilder("/functionBuilder", window.location.search)} className="self-start">
               <Button variant="outline" size="sm" className="flex items-center gap-x-2 self-start">
                 <span>Add</span>
                 <PlusCircledIcon className="h-4 w-4" />
               </Button>
             </Link>
           </FormItem>
+
         </form>
       </Form>
       
-      <div className="fixed left-[55px] bottom-0 w-[calc(50%-27.5px)] h-[32px] flex justify-end items-center text-xs px-4 border-t border-slate-300 text-slate-400 bg-slate-50 border-r border-r-slate-300">"
+      <div className="fixed left-[55px] bottom-0 w-[calc(50%-27.5px)] h-[32px] flex justify-end items-center text-xs px-4 border-t border-slate-300 text-slate-400 bg-slate-50 border-r border-r-slate-300">
         Last Updated {timeUpdated ? getTime(timeUpdated) : ""}
       </div>
     </section>

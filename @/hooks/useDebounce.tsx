@@ -1,7 +1,7 @@
 import { useRef, useEffect, useCallback } from "react"
 import { debounce } from "@/lib/utils";
 
-type Func = (...args: any[]) => void;
+type Func = (...args: any[]) => any;
 export default function useDebounce(callback: Func) {
   const ref = useRef<Func>();
 
@@ -10,7 +10,6 @@ export default function useDebounce(callback: Func) {
   }, [callback]);
 
   const debouncedCallback = useCallback(debounce((args: any) => {
-    console.log("getting in here?")
     ref.current?.(args);
   }, 1000), []);
 
