@@ -21,6 +21,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
+import { Taglist } from "@/components/ui/taglist";
 
 // types
 import type { formSchema } from "./types";
@@ -51,7 +52,7 @@ export const Obj = ({ parentName }: { parentName: "functions" }) => {
             render={({ field }) => (
               <FormItem>
                 <div className="relative">
-                  <FormLabel className="text-sm font-medium text-slate-950 dark:text-slate-50">
+                  <FormLabel className="text-sm font-medium">
                     Name
                   </FormLabel>
 
@@ -79,7 +80,7 @@ export const Obj = ({ parentName }: { parentName: "functions" }) => {
             name={`${parentName}.${i}.description`}
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-sm font-medium text-slate-950 dark:text-slate-50">
+                <FormLabel className="text-sm font-medium">
                   Description
                 </FormLabel>
 
@@ -158,7 +159,7 @@ const FunctionInputs = ({ parentName }: { parentName: `functions.${number}` }) =
         name={`${parentName}.type`}
         render={({ field }) => (
           <FormItem>
-            <FormLabel className="text-sm font-medium text-slate-950 dark:text-slate-50">
+            <FormLabel className="text-sm font-medium">
               Type
             </FormLabel>
 
@@ -186,14 +187,15 @@ const FunctionInputs = ({ parentName }: { parentName: `functions.${number}` }) =
           </FormItem>
         )}
       />
-     
+      
+      {/*
       {parentValues?.type === "string" && (
         <FormField
           control={form.control}
           name={`${parentName}.enum`}
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-sm font-medium text-slate-950 dark:text-slate-50">
+              <FormLabel className="text-sm font-medium">
                 Enum
               </FormLabel>
 
@@ -204,10 +206,15 @@ const FunctionInputs = ({ parentName }: { parentName: `functions.${number}` }) =
           )}
         />
       )}
+      */}
+
+      {parentValues?.type === "string" && (
+        <Taglist name={`${parentName}.enum`} label="Enum" />
+      )}
 
       {parentValues?.type === "array" && (
         <FormItem className="flex flex-col gap-y-3">
-          <FormLabel className="text-sm font-medium text-slate-950 dark:text-slate-50">
+          <FormLabel className="text-sm font-medium">
             Items
           </FormLabel>
           
@@ -217,7 +224,7 @@ const FunctionInputs = ({ parentName }: { parentName: `functions.${number}` }) =
 
       {parentValues?.type === "object" && (
         <FormItem>
-          <FormLabel className="text-sm font-medium text-slate-950 dark:text-slate-50">
+          <FormLabel className="text-sm font-medium">
             Properties
           </FormLabel>
           

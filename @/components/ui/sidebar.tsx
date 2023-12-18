@@ -7,11 +7,13 @@ import { cn } from "@/lib/utils"
 
 // components
 import { Button } from "@/components/ui/button";
+import AssistantsMenu from "~/app/_components/AssistantsMenu";
 
 // icons
 import RobotIcon from "@/icons/robot";
+import ThreadIcon from "@/icons/thread";
+import ChecklistIcon from "@/icons/checklist";
 import { CounterClockwiseClockIcon } from "@radix-ui/react-icons";
-import AssistantsMenu from "~/app/_components/AssistantsMenu";
 
 const sidebarVariants = cva(
   "w-[55px] h-screen hover:w-[px]",
@@ -42,7 +44,7 @@ const Sidebar = React.forwardRef<
       <AssistantsMenu open={assistantsMenuOpen} setOpen={setAssistantsMenuOpen} />
       <div
         ref={ref}
-        className={cn(`sidebar fixed top-0 left-0 bottom-0 right-0 z-10 w-[55px] h-screen bg-gray-700 ${assistantsMenuOpen ? "hidden" : ""} ${isHovered ? cn("w-[225px] shadow-2xl", hoverClassName) : ''}`, className)}
+        className={cn(`sidebar fixed top-0 left-0 bottom-0 right-0 z-30 w-[55px] h-screen bg-gray-700 ${assistantsMenuOpen ? "hidden" : ""} ${isHovered ? cn("w-[225px] shadow-2xl", hoverClassName) : ''}`, className)}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
         {...props}
@@ -60,6 +62,7 @@ const Sidebar = React.forwardRef<
           </div>    
           <div className="text-sm text-slate-600 dark:text-slate-50">Assistants</div>
         </Button>
+
         <Button
           variant="ghost"
           className="flex justify-start items-center max-w-full overflow-hidden gap-x-3 p-2"
@@ -68,6 +71,26 @@ const Sidebar = React.forwardRef<
             <CounterClockwiseClockIcon className="w-5 h-5 text-slate-600"/>
           </div>    
           <div className="text-sm text-slate-600 dark:text-slate-50">History</div>
+        </Button>
+
+        <Button
+          variant="ghost"
+          className="flex justify-start items-center max-w-full overflow-hidden gap-x-3 p-2"
+        >
+          <div className="flex items-center" >
+            <ThreadIcon className="w-5 h-5 text-slate-600"/>
+          </div>    
+          <div className="text-sm text-slate-600 dark:text-slate-50">Threads</div>
+        </Button>
+
+        <Button
+          variant="ghost"
+          className="flex justify-start items-center max-w-full overflow-hidden gap-x-3 p-2"
+        >
+          <div className="flex items-center" >
+            <ChecklistIcon className="w-5 h-5 text-slate-600"/>
+          </div>    
+          <div className="text-sm text-slate-600 dark:text-slate-50">Tests</div>
         </Button>
       </div>
     </>

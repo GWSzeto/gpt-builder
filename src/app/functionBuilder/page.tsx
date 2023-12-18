@@ -36,18 +36,12 @@ export default function Home() {
     try {
       if (!localStorage.getItem("openai-api-key")) return
       if (!assistantId) return
-      console.log("schema validation: ", schemaValidation(data))
       // await updateAssistant.mutateAsync({ id: assistantId, ...data });
       
     } catch(error: unknown) {
       // TODO: Handle error
     }
   }
-
-  const data = form.watch()
-
-  console.log("form is valid: ", form.formState.isValid)
-  console.log("form errors: ", form.formState.errors)
 
   return (
     <Form {...form}>

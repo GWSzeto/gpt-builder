@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -41,6 +42,7 @@ const formSchema = z.object({
 export default function GptBuilderForm() {
   const [assistantId, setAssistantId] = useQueryState("aid")
   const [timeUpdated, setTimeUpdated] = useState<Date | null>(null)
+  const searchParams = useSearchParams()
 
   api.assistant.fetch.useQuery(
     { id: assistantId! },
@@ -203,7 +205,7 @@ export default function GptBuilderForm() {
             <h3 className="text-sm font-medium text-slate-950 dark:text-slate-50">
               Functions
             </h3>
-            <Link href={urlBuilder("/functionBuilder", window.location.search)} className="self-start">
+            <Link href={urlBuilder("/functionBuilder", searchParams.toString())} className="self-start">
               <Button variant="outline" size="sm" className="flex items-center gap-x-2 self-start">
                 <span>Add</span>
                 <PlusCircledIcon className="h-4 w-4" />

@@ -22,8 +22,8 @@ export function AddRemoveArray<T>(flag: boolean, arr: T[], item: T) {
   }
 }
 
-export function urlBuilder(url: string, searchParams: string) {
-  return `${url}${searchParams}`;
+export function urlBuilder(url: string, search: string) {
+  return `${url}${search ?? ""}`;
 }
 
 export function deepCompare(obj1: object, obj2: object) {
