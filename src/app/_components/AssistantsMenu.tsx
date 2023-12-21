@@ -15,9 +15,14 @@ import { Button } from "@/components/ui/button";
 
 
 export default function AssistantsMenu({ open, setOpen }: { open: boolean, setOpen: Dispatch<SetStateAction<boolean>> }) {
-  const [assistantId] = useQueryState("aid")
+  const [assistantId, setAssistantId] = useQueryState("aid")
 
   const assistants = api.assistant.list.useQuery({})
+
+  const handleAssistantClick = async (id: string) => {
+    await setAssistantId(id);
+    setOpen(false);
+  }
 
   return (
     <Sheet open={open} onOpenChange={setOpen} >
@@ -31,7 +36,7 @@ export default function AssistantsMenu({ open, setOpen }: { open: boolean, setOp
             {assistants.data.data.map((assistant) => (
               <Link href={`/?aid=${assistant.id}`} key={assistant.id}>
                 <Button
-                  // onClick={() => handleAssistantClick(assistant.id)}
+                  onClick={() => handleAssistantClick(assistant.id)}
                   variant="ghost"
                   className={`justify-start px-4 py-2 ${assistantId === assistant.id ? "bg-slate-100" : ""}`} key={assistant.id}
                 >

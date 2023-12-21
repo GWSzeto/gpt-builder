@@ -1,10 +1,16 @@
 'use client'
 
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { useFormContext } from "react-hook-form";
 import Link from "next/link";
 import type * as z from "zod";
 import { useQueryState } from "next-usequerystate";
+
+// utils
+import { parseFunctionParameters } from "./types";
+import { urlBuilder } from "@/lib/utils";
+import { api } from "~/trpc/react";
 
 // types
 import { type formSchema } from "./types";
@@ -32,10 +38,60 @@ import {
   CaretLeftIcon,
 } from "@radix-ui/react-icons";
 
+const saveButtonStatus = {
+  idle: {
+    text: "Save",
+    variant: "",
+  },
+  loading: {
+    text: "Saving...",
+    variant: "",
+  },
+  success: {
+    text: "Saved!",
+    variant: "bg-green-500",
+  },
+  error: {
+    text: "Error",
+    variant: "bg-red-500",
+  },
+}
+
 export default function FunctionBuilderForm() {
   const [canSave, setCanSave] = useState<boolean>(false)
   const [assistantId] = useQueryState("aid")
+  const searchParams = useSearchParams()
+
+  const updateAssistant = api.assistant.update.useMutation()
+  const assistant = api.assistant.fetch.useQuery({ id: assistantId! }, { enabled: !!assistantId })
+
   const form = useFormContext<z.infer<typeof formSchema>>();
+
+  const onSubmit = async (data: z.infer<typeof formSchema>) => {
+    try {
+      if (!localStorage.getItem("openai-api-key")) return
+      if (!assistantId) return
+
+      const functionValue = {
+        type: "function" as const,
+        function: {
+          name: data.name,
+          description: data.description,
+          parameters: {
+            type: "object",
+            properties: parseFunctionParameters(data.functions),
+          }
+        }
+      }
+
+      await updateAssistant.mutateAsync({ id: assistantId, tools: [...assistant.data.tools, functionValue] });
+      setTimeout(() => updateAssistant.reset(), 2000)
+      
+    } catch(error: unknown) {
+      console.error("error: ", error)
+      // TODO: Handle error
+    }
+  }
 
   useEffect(() => {
     if (assistantId && localStorage.getItem("openai-api-key")) {
@@ -45,8 +101,8 @@ export default function FunctionBuilderForm() {
 
   return (
     <section className="relative w-1/2 max-h-screen overflow-y-auto z-10 flex flex-col border-r border-r-slate-300 overflow-x-auto pt-[70px]">
-      <header className="fixed top-0 bg-slate-50 left-[55px] w-[calc(50%-27.5px)] h-[70px] flex items-center justify-between px-8 border-b border-b-slate-300 border-r border-r-slate-300">
-        <Link href="/">
+      <header className="fixed top-0 z-20 bg-slate-50 left-[55px] w-[calc(50%-27.5px)] h-[70px] flex items-center justify-between px-8 border-b border-b-slate-300 border-r border-r-slate-300">
+        <Link href={urlBuilder("/", searchParams.toString())}>
           <Button variant="outline" size="icon">
             <CaretLeftIcon className="h-5 w-5" />
           </Button >
@@ -55,9 +111,16 @@ export default function FunctionBuilderForm() {
         <TooltipProvider>
           <Tooltip delayDuration={100} open={canSave ? false : undefined} >
             <TooltipTrigger>
-              <Button disabled={!canSave} type="submit">
-                Save
+
+              <Button
+                disabled={!canSave || updateAssistant.status === "loading"}
+                type="button"
+                onClick={form.handleSubmit(onSubmit)}
+                className={`w-20 ${saveButtonStatus[updateAssistant.status].variant}`}
+              >
+                {saveButtonStatus[updateAssistant.status].text}
               </Button>
+
             </TooltipTrigger>
             <TooltipContent className="z-20">
               Please add an OpenAI API key and select an assistant to save

@@ -14,16 +14,16 @@ export function debounce<T extends (...args: any[]) => void>(func: T, delay: num
   };
 }
 
-export function AddRemoveArray<T>(flag: boolean, arr: T[], item: T) {
+export function AddRemoveArray<T>(flag: boolean, arr: T[], item: T, condition?: (item: T) => boolean) {
   if (flag) {
     return [...arr, item];
   } else {
-    return arr.filter((i) => i !== item);
+    return arr.filter((i) => condition ? condition(item) : i !== item);
   }
 }
 
 export function urlBuilder(url: string, search: string) {
-  return `${url}${search ?? ""}`;
+  return `${url}?${search ?? ""}`;
 }
 
 export function deepCompare(obj1: object, obj2: object) {

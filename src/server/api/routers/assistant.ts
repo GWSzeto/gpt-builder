@@ -25,12 +25,22 @@ export const assistant = createTRPCRouter({
       name: z.string().optional(),
       description: z.string().optional(),
       instructions: z.string().optional(),
-      tools: z.array(z.union([z.literal("code_interpreter"), z.literal("retrieval"), z.literal("function")])).optional(),
+      tools: z.array(z.union([
+        z.object({ type: z.literal("code_interpreter") }),
+        z.object({ type: z.literal("retrieval") }),
+        z.object({
+          type: z.literal("function"),
+          function: z.object({
+            name: z.string(),
+            description: z.string().optional(),
+            parameters: z.record(z.unknown()),
+          }),
+        })
+      ])).optional(),
     }))
     .mutation(async ({ input, ctx }) => {
       const data = await ctx.openai.beta.assistants.create({
         ...input,
-        tools: input.tools?.map(tool => ({ type: tool })),
         model: "gpt-4-1106-preview",
       })
 
@@ -43,14 +53,22 @@ export const assistant = createTRPCRouter({
       name: z.string().optional(),
       description: z.string().optional(),
       instructions: z.string().optional(),
-      tools: z.array(z.union([z.literal("code_interpreter"), z.literal("retrieval"), z.literal("function")])).optional(),
+      tools: z.array(z.union([
+        z.object({ type: z.literal("code_interpreter") }),
+        z.object({ type: z.literal("retrieval") }),
+        z.object({
+          type: z.literal("function"),
+          function: z.object({
+            name: z.string(),
+            description: z.string().optional(),
+            parameters: z.record(z.unknown()),
+          }),
+        })
+      ])).optional(),
     }))
     .mutation(async ({ input, ctx }) => {
       const { id, ...body } = input
-      const data = await ctx.openai.beta.assistants.update(input.id, {
-        ...body,
-        tools: input.tools?.map(tool => ({ type: tool })),
-      })
+      const data = await ctx.openai.beta.assistants.update(id, body)
 
       return data
     }),
