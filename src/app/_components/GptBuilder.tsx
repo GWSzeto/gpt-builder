@@ -10,7 +10,8 @@ import { api } from "~/trpc/react";
 import { useQueryState } from "next-usequerystate";
 
 // utils
-import { AddRemoveArray, getTime, urlBuilder } from "@/lib/utils";
+import { AddRemoveArray, urlBuilder } from "@/lib/utils";
+import { formSchema as functionSchema, parseFunctionParameters } from "../functionBuilder/_components/types";
 
 // components
 import ExportCode from "./ExportCode";
@@ -33,8 +34,13 @@ import {
 } from "@/components/ui/tooltip"
 
 // icons
-import { Cross2Icon, PlusCircledIcon } from "@radix-ui/react-icons"; 
+import { Cross2Icon, PlusCircledIcon, CaretLeftIcon } from "@radix-ui/react-icons"; 
 import FunctionIcon from "@/icons/function";
+
+// function shit
+import { Obj } from "../functionBuilder/_components/FunctionInputs";
+import { Separator } from "@/components/ui/separator";
+
 
 const saveButtonStatus = {
   idle: {
@@ -55,18 +61,10 @@ const saveButtonStatus = {
   },
 }
 
-const functionTool = z.object({ 
-  type: z.literal("function"),
-  function: z.object({
-    name: z.string(),
-    description: z.string().optional(),
-    parameters: z.record(z.unknown()),
-  }),
-})
 const tool = z.union([
   z.object({ type: z.literal("code_interpreter") }),
   z.object({ type: z.literal("retrieval") }),
-  functionTool,
+  functionSchema,
 ])
 const formSchema = z.object({
   name: z.string().optional(),
@@ -76,6 +74,7 @@ const formSchema = z.object({
 });
 
 export default function GptBuilderForm() {
+  const [toolParentName, setToolParentName] = useState<`tools.${number}.function` | null>(null)
   const [assistantId, setAssistantId] = useQueryState("aid")
   const searchParams = useSearchParams()
 
@@ -107,23 +106,37 @@ export default function GptBuilderForm() {
       tools: [],
     },
   });
-  const fieldArray = useFieldArray({
+  const toolFieldArray = useFieldArray({
     control: form.control,
     name: "tools",
   })
 
   const data = form.watch();
 
-  console.log("Data: ", data)
-
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     try {
-      formSchema.parse(data)
+      const tools = data.tools.map((tool) => {
+        if (tool.type !== "function") return tool;
+
+        return {
+          type: "function" as const,
+          function: {
+            name: tool.function.name,
+            description: tool.function.description,
+            parameters: {
+              type: "object",
+              properties: parseFunctionParameters(tool.function.parameters),
+            }
+          }
+        }
+      })
+      const assistantData = { ...data, tools }
+
       if (assistantId) {
-        await updateAssistant.mutateAsync({ id: assistantId, ...data });
+        await updateAssistant.mutateAsync({ id: assistantId, ...assistantData });
         setTimeout(() => updateAssistant.reset(), 2000)
       } else if (localStorage.getItem("openai-api-key")) { 
-        const assistant = await createAssistant.mutateAsync(data);
+        const assistant = await createAssistant.mutateAsync(assistantData);
         await setAssistantId(assistant.id);
         setTimeout(() => createAssistant.reset(), 2000)
       }
@@ -133,10 +146,38 @@ export default function GptBuilderForm() {
     }
   }
 
+  console.log("Data: ", data)
+
+  const addFunctionTool = () => {
+    const newToolIndex = toolFieldArray.fields.length
+
+    toolFieldArray.append({
+      type: "function",
+      function: {
+        name: "",
+        description: "",
+        parameters: [{
+          name: "",
+          type: "string",
+          enum: [],
+        }]
+      }
+    })
+    setToolParentName(`tools.${newToolIndex}.function`)
+  }
+
   return (
     <TooltipProvider>
       <section className="relative w-1/2 max-h-screen overflow-y-auto flex flex-col border-r border-r-slate-300 pt-[70px]"> 
         <header className="fixed top-0 z-20 bg-slate-50 left-[55px] w-[calc(50%-27.5px)] h-[70px] flex items-center justify-between px-8 border-b border-b-slate-300 border-r border-r-slate-300">
+          {toolParentName ? (
+            <Button onClick={() => setToolParentName(null)} variant="outline" size="icon">
+              <CaretLeftIcon className="h-5 w-5" />
+            </Button >
+          ) : (
+            <ExportCode nodeCode={"const asd = () => console.log('asd')"} pythonCode={"print('dsa')"}/>
+          )}
+
           <Button
             disabled={createAssistant.status === "loading" || updateAssistant.status === "loading"}
             type="button"
@@ -145,137 +186,183 @@ export default function GptBuilderForm() {
           >
             {saveButtonStatus[updateAssistant.status].text}
           </Button>
-
-          <ExportCode nodeCode={"const asd = () => console.log('asd')"} pythonCode={"print('dsa')"}/>
         </header>
         
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-y-6 px-8 py-4 mb-[32px]">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-sm font-medium text-slate-950 dark:text-slate-50">
-                    Name
-                  </FormLabel>
+            {toolParentName ? (
+              <>
+                <h1 className="text-2xl font-bold text-slate-950 dark:text-slate-50">
+                  Function
+                </h1>
 
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
+                <FormField
+                  control={form.control}
+                  name={`${toolParentName}.name`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium">
+                        Name
+                      </FormLabel>
 
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-sm font-medium text-slate-950 dark:text-slate-50">
-                    Description
-                  </FormLabel>
+                      <FormControl>
+                        <Input {...field} className="w-[260px]" />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
 
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="instructions"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-sm font-medium text-slate-950 dark:text-slate-50">
-                    Instructions
-                  </FormLabel>
-
-                  <FormControl>
-                    <Textarea {...field} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-
-            <div className="flex flex-col gap-y-3">
-              <h3 className="text-sm font-medium text-slate-950 dark:text-slate-50">
-                Knowledge
-              </h3>
-              <Button variant="outline" size="sm" className="self-start">
-                Upload
-              </Button>
-            </div>
-
-            <div className="flex flex-col gap-y-3">
-              <h3 className="text-sm font-medium text-slate-950 dark:text-slate-50">
-                Capabilities
-              </h3>
-
-              <div className="flex items-center gap-x-2">
-                <FormControl>
-                  <Checkbox
-                    checked={!!(data.tools.find(tool => tool.type === "code_interpreter"))}
-                    onCheckedChange={(checked) => form.setValue("tools", AddRemoveArray<z.infer<typeof tool>>(
-                      Boolean(checked), 
-                      data.tools, 
-                      { type: "code_interpreter" },
-                      (item: z.infer<typeof tool>) => item.type !== "code_interpreter")
-                    )}
-                  />
-                </FormControl>
-
-                <FormLabel className="text-sm font-medium text-slate-950 dark:text-slate-50">
-                  Code Interpreter
-                </FormLabel>
-              </div>
-
-              <div className="flex items-center gap-x-2">
-                <FormControl>
-                  <Checkbox
-                    // checked={data.tools.includes("image")}
-                    // onCheckedChange={(checked) => form.setValue("tools", AddRemoveArray(Boolean(checked), data.tools, "codeInterpreter"))}
-                    disabled
-                  />
-                </FormControl>
-
-                <FormLabel className="text-sm font-medium text-slate-400 dark:text-slate-50">
-                  Image Generation (coming soon...)
-                </FormLabel>
-              </div>
-            </div>
-            
-            <FormItem className="flex flex-col gap-1">
-              <h3 className="text-sm font-medium text-slate-950 dark:text-slate-50">
-                Functions
-              </h3>
-
-              {data.tools
-                .map((tool, index) => tool.type === "function" && (
-                  <div className="flex items-center justify-between" key={index} >
-                    <div className="flex items-center gap-x-2 cursor-pointer">
-                      <div className="rounded-full p-1 bg-slate-200" >
-                        <FunctionIcon className="h-4 w-4 text-slate-500" />
+                <FormField
+                  control={form.control}
+                  name={`${toolParentName}.description`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <div className="relative">
+                        <FormLabel className="text-sm font-medium">
+                          Description
+                        </FormLabel>
                       </div>
-                      <span className="text-sm">{tool.function.name}</span>
-                    </div>
+                      <FormControl>
+                        <Input {...field} className="w-[260px]" />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
 
-                    <Button variant="outline" size="icon" className="grid place-items-center rounded-full h-6 w-6">
-                      <Cross2Icon className="h-4 w-4" />
-                    </Button>
+                <Separator className="my-6" />
+
+                <h1 className="text-2xl font-bold text-slate-950 dark:text-slate-50">
+                  Parameters
+                </h1>
+
+                <Obj parentName={`${toolParentName}.parameters`} />
+              </>
+            ) : (
+              <>
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium text-slate-950 dark:text-slate-50">
+                        Name
+                      </FormLabel>
+
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium text-slate-950 dark:text-slate-50">
+                        Description
+                      </FormLabel>
+
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="instructions"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium text-slate-950 dark:text-slate-50">
+                        Instructions
+                      </FormLabel>
+
+                      <FormControl>
+                        <Textarea {...field} />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+
+                <div className="flex flex-col gap-y-3">
+                  <h3 className="text-sm font-medium text-slate-950 dark:text-slate-50">
+                    Knowledge
+                  </h3>
+                  <Button variant="outline" size="sm" className="self-start">
+                    Upload
+                  </Button>
+                </div>
+
+                <div className="flex flex-col gap-y-3">
+                  <h3 className="text-sm font-medium text-slate-950 dark:text-slate-50">
+                    Capabilities
+                  </h3>
+
+                  <div className="flex items-center gap-x-2">
+                    <FormControl>
+                      <Checkbox
+                        checked={!!(data.tools.find(tool => tool.type === "code_interpreter"))}
+                        onCheckedChange={(checked) => form.setValue("tools", AddRemoveArray<z.infer<typeof tool>>(
+                          Boolean(checked), 
+                          data.tools, 
+                          { type: "code_interpreter" },
+                          (item: z.infer<typeof tool>) => item.type !== "code_interpreter")
+                        )}
+                      />
+                    </FormControl>
+
+                    <FormLabel className="text-sm font-medium text-slate-950 dark:text-slate-50">
+                      Code Interpreter
+                    </FormLabel>
                   </div>
-                ))
-              }
 
-              <Link href={urlBuilder("/functionBuilder", searchParams.toString())} className="self-start">
-                <Button variant="outline" size="sm" className="flex items-center gap-x-2 self-start">
-                  <span>Add</span>
-                  <PlusCircledIcon className="h-4 w-4" />
-                </Button>
-              </Link>
-            </FormItem>
+                  <div className="flex items-center gap-x-2">
+                    <FormControl>
+                      <Checkbox
+                        // checked={data.tools.includes("image")}
+                        // onCheckedChange={(checked) => form.setValue("tools", AddRemoveArray(Boolean(checked), data.tools, "codeInterpreter"))}
+                        disabled
+                      />
+                    </FormControl>
 
+                    <FormLabel className="text-sm font-medium text-slate-400 dark:text-slate-50">
+                      Image Generation (coming soon...)
+                    </FormLabel>
+                  </div>
+                </div>
+                
+                <FormItem className="flex flex-col gap-1">
+                  <h3 className="text-sm font-medium text-slate-950 dark:text-slate-50">
+                    Functions
+                  </h3>
+
+                  {data.tools
+                    .map((tool, index) => tool.type === "function" && (
+                      <div className="flex items-center justify-between" key={index} >
+                        <div onClick={() => setToolParentName(`tool.${index}.function`)} className="flex items-center gap-x-2 cursor-pointer">
+                          <div className="rounded-full p-1 bg-slate-200" >
+                            <FunctionIcon className="h-4 w-4 text-slate-500" />
+                          </div>
+                          <span className="text-sm">{tool.function.name}</span>
+                        </div>
+
+                        <Button onClick={() => toolFieldArray.remove(index)} variant="outline" size="icon" className="grid place-items-center rounded-full h-6 w-6">
+                          <Cross2Icon className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))
+                  }
+
+                  <Button onClick={() => addFunctionTool()} variant="outline" size="sm" className="flex items-center gap-x-2 self-start">
+                    <span>Add</span>
+                    <PlusCircledIcon className="h-4 w-4" />
+                  </Button>
+                </FormItem>
+              </>
+            )}
           </form>
         </Form>
       </section>

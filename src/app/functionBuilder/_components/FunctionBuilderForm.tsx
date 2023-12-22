@@ -103,6 +103,7 @@ export default function FunctionBuilderForm() {
     <section className="relative w-1/2 max-h-screen overflow-y-auto z-10 flex flex-col border-r border-r-slate-300 overflow-x-auto pt-[70px]">
       <header className="fixed top-0 z-20 bg-slate-50 left-[55px] w-[calc(50%-27.5px)] h-[70px] flex items-center justify-between px-8 border-b border-b-slate-300 border-r border-r-slate-300">
         <Link href={urlBuilder("/", searchParams.toString())}>
+
           <Button variant="outline" size="icon">
             <CaretLeftIcon className="h-5 w-5" />
           </Button >

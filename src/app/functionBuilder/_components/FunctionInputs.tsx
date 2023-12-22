@@ -32,7 +32,7 @@ import {
   MinusCircledIcon,
 } from "@radix-ui/react-icons";
 
-export const Obj = ({ parentName }: { parentName: "functions" }) => {
+export const Obj = ({ parentName }: { parentName: `tools.${number}.function.parameters` }) => {
   const form = useFormContext<z.infer<typeof formSchema>>();
 
   const fieldArray = useFieldArray({
@@ -113,15 +113,15 @@ export const Obj = ({ parentName }: { parentName: "functions" }) => {
   )
 }
 
-const FunctionInputs = ({ parentName }: { parentName: `functions.${number}` }) => {
+const FunctionInputs = ({ parentName }: { parentName: `tools.${number}.function.parameters.${number}` }) => {
   const form = useFormContext<z.infer<typeof formSchema>>();
 
   const parentValues = form.watch(parentName);
 
   const updateField = (type: string) => {
     const baseData = {
-      name: parentValues.name,
-      description: parentValues.description,
+      name: parentValues.name as string,
+      description: parentValues.description as string,
     }
 
     if (type === "string") {
@@ -188,26 +188,6 @@ const FunctionInputs = ({ parentName }: { parentName: `functions.${number}` }) =
         )}
       />
       
-      {/*
-      {parentValues?.type === "string" && (
-        <FormField
-          control={form.control}
-          name={`${parentName}.enum`}
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-sm font-medium">
-                Enum
-              </FormLabel>
-
-              <FormControl>
-                <Input {...field} className="w-[260px]" />
-              </FormControl>
-            </FormItem>
-          )}
-        />
-      )}
-      */}
-
       {parentValues?.type === "string" && (
         <Taglist name={`${parentName}.enum`} label="Enum" />
       )}

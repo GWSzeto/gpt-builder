@@ -19,9 +19,12 @@ export const schema: z.ZodType<Schema> = z.object({
 })
 
 export const formSchema = z.object({
-  name: z.string().min(1),
-  description: z.string().optional(),
-  functions: z.array(schema),
+  type: z.literal("function"),
+  function: z.object({
+    name: z.string().min(1),
+    description: z.string().optional(),
+    parameters: z.array(schema),
+  })
 })
 
 const formSchemaKeyPath = z.string().regex(/^(functions)((\.[0-9]+)(\.(properties|items)))*/)
