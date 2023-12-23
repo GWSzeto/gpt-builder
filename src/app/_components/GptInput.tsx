@@ -1,7 +1,9 @@
-import { useState, useEffect, FormEvent, Dispatch, SetStateAction } from "react";
+import { useState, useEffect } from "react";
+import type { FormEvent, Dispatch, SetStateAction } from "react"
 import { api } from "~/trpc/react";
 import type { Message } from "./GptChat";
 import { useQueryState } from "next-usequerystate";
+import { Spinner } from "@nextui-org/react";
 
 // types
 import type { RunStep } from "~/server/api/routers/runStep";
@@ -9,6 +11,8 @@ import type { RunStep } from "~/server/api/routers/runStep";
 // components
 import EnterApiKey from "@/components/EnterApiKey";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { PaperPlaneIcon } from "@radix-ui/react-icons";
 
 export default function GptInput({ setMessages }: { setMessages: Dispatch<SetStateAction<Message[]>>}) {
   const [open, setOpen] = useState<boolean>(false);
@@ -48,7 +52,7 @@ export default function GptInput({ setMessages }: { setMessages: Dispatch<SetSta
       // create assistant if it doesn't exist
       if (!aid) {
         const { id } = await createAssistant.mutateAsync({})
-        setAssistantId(id)
+        await setAssistantId(id)
         aid = id
       }
 
@@ -63,7 +67,7 @@ export default function GptInput({ setMessages }: { setMessages: Dispatch<SetSta
           assistantId: aid,
           message: input,
         });
-        setThreadId(_tid);
+        await setThreadId(_tid);
         tid = _tid;
         runSteps = rs;
       }
@@ -76,8 +80,8 @@ export default function GptInput({ setMessages }: { setMessages: Dispatch<SetSta
 
       // TODO: Look into how run steps.list works and work out the edge cases for this
       setMessages(messages => [...messages, assistantContent!])
-    } catch (error: any) {
-      setMessages(messages => [...messages, error.message])
+    } catch (error: unknown) {
+      // setMessages(messages => [...messages, error.message as string])
     }
   }
 
@@ -88,13 +92,25 @@ export default function GptInput({ setMessages }: { setMessages: Dispatch<SetSta
   return (
     <form onSubmit={onSubmit} className="fixed w-[calc(50%-27.5px)] bottom-0 right-0 px-8 py-4">
       <EnterApiKey open={open} setOpen={setOpen} />
-      <Input
-        className="bg-slate-50"
-        disabled={!localLoaded}
-        placeholder="Type here..."
-        onChange={e => setInput(e.target.value)}
-        value={input}
-      />
+      <div className="relative">
+        <Input
+          className="bg-slate-50 h-10"
+          disabled={!localLoaded}
+          placeholder="Type here..."
+          onChange={e => setInput(e.target.value)}
+          value={input}
+        />
+        <Button
+          type="submit"
+          className={`absolute top-1 right-1 h-8 w-8 ${createAssistant.isLoading || createThreadAndRun.isLoading || createMessage.isLoading ? "bg-transparent" : ""}`}
+          size="icon" disabled={createAssistant.isLoading || createThreadAndRun.isLoading || createMessage.isLoading}
+        >
+          {createAssistant.isLoading || createThreadAndRun.isLoading || createMessage.isLoading
+            ? <Spinner size="sm" />
+            : <PaperPlaneIcon className="w-4 h-4" />
+          }
+        </Button>
+      </div>
     </form>
   )
 }

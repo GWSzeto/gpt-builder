@@ -1,8 +1,6 @@
 'use client'
 
 import { useState } from "react";
-import { useSearchParams } from "next/navigation";
-import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useFieldArray, useForm } from "react-hook-form";
 import * as z from "zod";
@@ -10,8 +8,8 @@ import { api } from "~/trpc/react";
 import { useQueryState } from "next-usequerystate";
 
 // utils
-import { AddRemoveArray, urlBuilder } from "@/lib/utils";
-import { formSchema as functionSchema, parseFunctionParameters } from "../functionBuilder/_components/types";
+import { AddRemoveArray } from "@/lib/utils";
+import { formSchema as functionSchema, parseFunctionParameters } from "../_functionBuilder/_components/types";
 
 // components
 import ExportCode from "./ExportCode";
@@ -27,19 +25,13 @@ import {
   FormLabel,
 } from "@/components/ui/form";
 import {
-  Tooltip,
-  TooltipContent,
   TooltipProvider,
-  TooltipTrigger,
 } from "@/components/ui/tooltip"
 
 // icons
 import { Cross2Icon, PlusCircledIcon, CaretLeftIcon } from "@radix-ui/react-icons"; 
 import FunctionIcon from "@/icons/function";
-
-// function shit
-import { Obj } from "../functionBuilder/_components/FunctionInputs";
-import { Separator } from "@/components/ui/separator";
+import FunctionBuilder from "./FunctionBuilder";
 
 
 const saveButtonStatus = {
@@ -76,7 +68,6 @@ const formSchema = z.object({
 export default function GptBuilderForm() {
   const [toolParentName, setToolParentName] = useState<`tools.${number}.function` | null>(null)
   const [assistantId, setAssistantId] = useQueryState("aid")
-  const searchParams = useSearchParams()
 
   api.assistant.fetch.useQuery(
     { id: assistantId! },
@@ -146,8 +137,6 @@ export default function GptBuilderForm() {
     }
   }
 
-  console.log("Data: ", data)
-
   const addFunctionTool = () => {
     const newToolIndex = toolFieldArray.fields.length
 
@@ -191,52 +180,7 @@ export default function GptBuilderForm() {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-y-6 px-8 py-4 mb-[32px]">
             {toolParentName ? (
-              <>
-                <h1 className="text-2xl font-bold text-slate-950 dark:text-slate-50">
-                  Function
-                </h1>
-
-                <FormField
-                  control={form.control}
-                  name={`${toolParentName}.name`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-sm font-medium">
-                        Name
-                      </FormLabel>
-
-                      <FormControl>
-                        <Input {...field} className="w-[260px]" />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name={`${toolParentName}.description`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <div className="relative">
-                        <FormLabel className="text-sm font-medium">
-                          Description
-                        </FormLabel>
-                      </div>
-                      <FormControl>
-                        <Input {...field} className="w-[260px]" />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-
-                <Separator className="my-6" />
-
-                <h1 className="text-2xl font-bold text-slate-950 dark:text-slate-50">
-                  Parameters
-                </h1>
-
-                <Obj parentName={`${toolParentName}.parameters`} />
-              </>
+              <FunctionBuilder toolParentName={toolParentName} />
             ) : (
               <>
                 <FormField
@@ -342,7 +286,7 @@ export default function GptBuilderForm() {
                   {data.tools
                     .map((tool, index) => tool.type === "function" && (
                       <div className="flex items-center justify-between" key={index} >
-                        <div onClick={() => setToolParentName(`tool.${index}.function`)} className="flex items-center gap-x-2 cursor-pointer">
+                        <div onClick={() => setToolParentName(`tools.${index}.function`)} className="flex items-center gap-x-2 cursor-pointer">
                           <div className="rounded-full p-1 bg-slate-200" >
                             <FunctionIcon className="h-4 w-4 text-slate-500" />
                           </div>

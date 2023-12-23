@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQueryState } from "next-usequerystate";
+import Markdown from "react-markdown";
 
 // utils
 import { api } from "~/trpc/react";
@@ -21,6 +22,7 @@ export type Message = {
 }
 
 export default function GptChat() {
+  const containerRef = useRef<HTMLDivElement>(null);
   const [messages, setMessages] = useState<Message[]>([]); 
   const [threadId] = useQueryState("tid");
 
@@ -34,8 +36,19 @@ export default function GptChat() {
     },
   )
   
+  useEffect(() => {
+    if (containerRef.current) {
+      const element = containerRef.current;
+      element.scroll({
+        top: element.scrollHeight,
+        left: 0,
+        behavior: "smooth",
+      })
+    }
+  }, [messages]);
+  
   return (
-    <section className="relative w-1/2 max-h-screen overflow-y-auto flex-col px-8 py-20">
+    <section ref={containerRef} className="relative w-1/2 max-h-screen overflow-y-auto flex-col px-8 py-20">
       <InitialPromo />
       
       <div className="flex flex-col gap-y-12">
@@ -58,7 +71,9 @@ export default function GptChat() {
             </div>
             
             <span className="ml-8 text-slate-950 dark:text-slate-50">
-              {content}
+              <Markdown>
+                {content}
+              </Markdown>
             </span>
           </div>
         ))}

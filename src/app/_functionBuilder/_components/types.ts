@@ -59,39 +59,3 @@ export const parseFunctionParameters = (data: Schema[]) => {
   }, {} as Record<string, Omit<Schema, "name">>)
 }
 
-
-
-type ValidationSchema = {
-  valid: boolean,
-  error?: string,
-}
-// True if good, False if bad
-export const schemaValidation = (data: z.infer<typeof formSchema> & { name: string; description?: string; }): ValidationSchema => {
-  const { name, description, functions } = data;
-  if (name.length === 0) return { valid: false, error: "Name cannot be empty" };
-
-  return functions.reduce((acc, item) => {
-    return validateFunctionParameters(item, true);
-  }, {})
-}
-
-export const validateFunctionParameters = (item: Schema | Omit<Schema, "name" | "description">, isObj: boolean): ValidationSchema => {
-  if (isObj && (item as Schema).name.length === 0) {
-    return { valid: false, error: "Name cannot be empty" };
-  }
-  if (item.type === "object") {
-    if (item.properties && item.properties.length != 0) {
-      return item.properties.reduce((acc, _item) => {
-        return acc && validateFunctionParameters(_item, true)
-      }, true)
-    } else {
-      return false;
-    }
-  }
-  if (item.type === "array") {
-    return validateFunctionParameters(item.items!, false)
-  }
-
-  return true
-}
-
