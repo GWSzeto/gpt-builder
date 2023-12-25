@@ -58,7 +58,7 @@ const tool = z.union([
   z.object({ type: z.literal("retrieval") }),
   functionSchema,
 ])
-const formSchema = z.object({
+export const formSchema = z.object({
   name: z.string().optional(),
   description: z.string().optional(),
   instructions: z.string().optional(),

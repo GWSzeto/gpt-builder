@@ -1,6 +1,6 @@
-import OpenAI from "openai";
+import type OpenAI from "openai";
 import { z } from "zod";
-import { MessageCreationStepDetails } from "openai/resources/beta/threads/runs/steps.mjs";
+import type { MessageCreationStepDetails } from "openai/resources/beta/threads/runs/steps.mjs";
 import * as message from "./message";
 
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
@@ -19,7 +19,7 @@ export const list = async (openai: OpenAI, threadId: string, runId: string): Pro
   const { data, /*lastId*/ } = await openai.beta.threads.runs.steps.list(threadId, runId)
   const formattedData = await Promise.all(data.map(async step => {
     try {
-      let assistantContent: string = "";
+      let assistantContent = "";
       if (step.type === "message_creation") {
         const { content: [messageData] } = await message.fetch(
           openai, 

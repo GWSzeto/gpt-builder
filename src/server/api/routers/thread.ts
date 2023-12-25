@@ -28,9 +28,11 @@ export const thread = createTRPCRouter({
       })
 
       await new Promise<void>((resolve) => setInterval(() => {
-        run.fetch(ctx.openai, threadId, runId).then(({ status }) => {
-          if (status === "completed") resolve()
-        })
+        run.fetch(ctx.openai, threadId, runId)
+          .then(({ status }) => {
+            if (status === "completed") resolve()
+          })
+          .catch((error) => { console.error(error) })
       }, 1000))
       
       const data = await runSteps.list(ctx.openai, threadId, runId)

@@ -24,7 +24,7 @@ import openAI from "openai";
  * @see https://trpc.io/docs/server/context
  */
 export const createTRPCContext = async (opts: { headers: Headers }) => {
-  const apiKey = opts.headers.get("x-openai-api-key") || "";
+  const apiKey = opts.headers.get("x-openai-api-key") ?? "";
   if (!apiKey) {
     throw new TRPCError({
       code: "BAD_REQUEST",

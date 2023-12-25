@@ -1,8 +1,7 @@
-// @ts-nocheck
 'use client';
 
 import { useFieldArray, useFormContext } from "react-hook-form";
-import * as z from "zod";
+import type * as z from "zod";
 
 // components
 import {
@@ -24,7 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Taglist } from "@/components/ui/taglist";
 
 // types
-import type { formSchema } from "./types";
+import type { formSchema } from "../../_components/GptBuilder";
 
 // icons
 import {
@@ -118,10 +117,11 @@ const FunctionInputs = ({ parentName }: { parentName: `tools.${number}.function.
 
   const parentValues = form.watch(parentName);
 
-  const updateField = (type: string) => {
+  const updateField = (type: "string" | "boolean" | "number" | "array" | "object") => {
     const baseData = {
-      name: parentValues.name as string,
-      description: parentValues.description as string,
+      name: parentValues.name,
+      description: parentValues.description,
+      type,
     }
 
     if (type === "string") {
@@ -165,7 +165,7 @@ const FunctionInputs = ({ parentName }: { parentName: `tools.${number}.function.
 
             <Select
               onValueChange={type => {
-                updateField(type)
+                updateField(type as "string" | "number" | "boolean" | "object" | "array")
                 field.onChange(type)
               }}
               defaultValue={field.value}
@@ -198,7 +198,7 @@ const FunctionInputs = ({ parentName }: { parentName: `tools.${number}.function.
             Items
           </FormLabel>
           
-          <FunctionInputs parentName={`${parentName}.items`} className="w-[260px]" />
+          <FunctionInputs parentName={`${parentName}.items` as typeof parentName} />
         </FormItem>
       )}
 
@@ -210,7 +210,7 @@ const FunctionInputs = ({ parentName }: { parentName: `tools.${number}.function.
           
           <div className="flex gap-x-6">
             <Separator className="h-[inherit]" orientation="vertical" />
-            <Obj parentName={`${parentName}.properties`} />
+            <Obj parentName={`${parentName}.properties` as `tools.${number}.function.parameters`} />
           </div>
         </FormItem>
       )}

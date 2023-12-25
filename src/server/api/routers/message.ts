@@ -1,11 +1,11 @@
 import { z } from "zod";
-import OpenAI from "openai";
+import type OpenAI from "openai";
 
 import * as run from "./run";
 import * as runSteps from "./runStep";
 
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
-import { MessageContentText, ThreadMessage } from "openai/resources/beta/threads/messages/messages.mjs";
+import type { MessageContentText, ThreadMessage } from "openai/resources/beta/threads/messages/messages.mjs";
 
 export const fetch = async (openai: OpenAI, thread_id: string, message_id: string) => {
   const data = await openai.beta.threads.messages.retrieve(thread_id, message_id)
@@ -44,7 +44,7 @@ export const message = createTRPCRouter({
     .input(z.object({ threadId: z.string(), after: z.string().optional() }))
     .query(async ({ ctx, input }) => {
       const { threadId, after } = input;
-      const { data, last_id, has_more } = await ctx.openai.beta.threads.messages.list(threadId, {
+      const { data, /* last_id, has_more */ } = await ctx.openai.beta.threads.messages.list(threadId, {
         limit: 100,
         order: "asc",
         after,
@@ -74,9 +74,11 @@ export const message = createTRPCRouter({
       const { id: runId } = await run.create(ctx.openai, threadId, assistantId)
 
       await new Promise<void>((resolve) => setInterval(() => {
-        run.fetch(ctx.openai, threadId, runId).then(({ status }) => {
-          if (status === "completed") resolve()
-        })
+        run.fetch(ctx.openai, threadId, runId)
+          .then(({ status }) => {
+            if (status === "completed") resolve()
+          })
+          .catch((error) => { console.error(error) })
       }, 1000))
       
       const data = await runSteps.list(ctx.openai, threadId, runId)
@@ -89,11 +91,15 @@ export const message = createTRPCRouter({
   // Or should it do something else?
   update: publicProcedure
     .input(z.object({ name: z.string().min(1) }))
-    .mutation(async ({ input }) => {}),
+    .mutation(async ({ input }) => {
+      return "asd";
+    }),
 
   delete: publicProcedure
     .input(z.object({ name: z.string().min(1) }))
-    .mutation(async ({ input }) => {}),
+    .mutation(async ({ input }) => {
+      return "asd";
+    }),
 
 });
 

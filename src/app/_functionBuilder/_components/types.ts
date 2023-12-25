@@ -9,12 +9,14 @@ export type Schema = {
   items?: Omit<Schema, "name" | "description">,
 }
 
+// @ts-expect-error zod and typescript don't play nice with recursive types
 export const schema: z.ZodType<Schema> = z.object({
   name: z.string().min(1),
   description: z.string().optional(),
   type: z.union([z.literal("string"), z.literal("number"), z.literal("boolean"), z.literal("array"), z.literal("object")]),
   enum: z.array(z.string()).optional(),
   properties: z.lazy(() => schema.array().optional()),
+  // @ts-expect-error zod and typescript don't play nice with recursive types
   items: z.lazy(() => (schema as z.ZodObject<Schema>).omit({ name: true, description: true }).optional())
 })
 
@@ -30,7 +32,7 @@ export const formSchema = z.object({
 const formSchemaKeyPath = z.string().regex(/^(functions)((\.[0-9]+)(\.(properties|items)))*/)
 
 export const parseFunctionParameters = (data: Schema[]) => {
-  const parseItem = (item: Omit<Schema, "name" | "description">): Omit<Schema, "name" | "description">=> {
+  const parseItem = (item: Omit<Schema, "name" | "description">): Record<string, unknown> => {
     if (item.type === "object") {
       return {
         ...item,
@@ -56,6 +58,6 @@ export const parseFunctionParameters = (data: Schema[]) => {
         ...parseItem(baseData),
       }
     }
-  }, {} as Record<string, Omit<Schema, "name">>)
+  }, {} as Record<string, unknown>)
 }
 

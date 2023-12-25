@@ -46,7 +46,7 @@ export function TRPCReactProvider(props: {
               ...options,
               headers: {
                 ...options?.headers,
-                "x-openai-api-key": localStorage.getItem("openai-api-key") || "",
+                "x-openai-api-key": localStorage.getItem("openai-api-key") ?? "",
               },
             })
           }
