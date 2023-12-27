@@ -3,7 +3,6 @@ import type { FormEvent, Dispatch, SetStateAction } from "react"
 import { api } from "~/trpc/react";
 import type { Message } from "./GptChat";
 import { useQueryState } from "next-usequerystate";
-import { Spinner } from "@nextui-org/react";
 
 // types
 import type { RunStep } from "~/server/api/routers/runStep";
@@ -13,6 +12,7 @@ import EnterApiKey from "@/components/EnterApiKey";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { PaperPlaneIcon } from "@radix-ui/react-icons";
+import { Spinner } from "@nextui-org/react";
 
 export default function GptInput({ setMessages }: { setMessages: Dispatch<SetStateAction<Message[]>>}) {
   const [open, setOpen] = useState<boolean>(false);

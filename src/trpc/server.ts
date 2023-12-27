@@ -19,18 +19,16 @@ import { transformer } from "./shared";
  * This wraps the `createTRPCContext` helper and provides the required context for the tRPC API when
  * handling a tRPC call from a React Server Component.
  */
-const createContext = cache((openaiApiKey: string) => {
-  console.log("openai api key: ", openaiApiKey);
+const createContext = cache(() => {
   return createTRPCContext({
     headers: new Headers({
       cookie: cookies().toString(),
       "x-trpc-source": "rsc",
-      "x-openai-api-key": openaiApiKey,
     }),
   });
 });
 
-export const api = (openaiApiKey: string) => createTRPCProxyClient<typeof appRouter>({
+export const api = createTRPCProxyClient<typeof appRouter>({
   transformer,
   links: [
     loggerLink({
@@ -45,7 +43,7 @@ export const api = (openaiApiKey: string) => createTRPCProxyClient<typeof appRou
     () =>
       ({ op }) =>
         observable((observer) => {
-          createContext(openaiApiKey)
+          createContext()
             .then((ctx) => {
               return callProcedure({
                 procedures: appRouter._def.procedures,

@@ -13,6 +13,7 @@ import { formSchema as functionSchema, parseFunctionParameters } from "../_funct
 
 // components
 import ExportCode from "./ExportCode";
+import FileManagement from "./FileManagement";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -32,7 +33,6 @@ import {
 import { Cross2Icon, PlusCircledIcon, CaretLeftIcon } from "@radix-ui/react-icons"; 
 import FunctionIcon from "@/icons/function";
 import FunctionBuilder from "./FunctionBuilder";
-
 
 const saveButtonStatus = {
   idle: {
@@ -69,7 +69,7 @@ export default function GptBuilderForm() {
   const [toolParentName, setToolParentName] = useState<`tools.${number}.function` | null>(null)
   const [assistantId, setAssistantId] = useQueryState("aid")
 
-  api.assistant.fetch.useQuery(
+  const assistant = api.assistant.fetch.useQuery(
     { id: assistantId! },
     {
       enabled: !!assistantId,
@@ -85,6 +85,7 @@ export default function GptBuilderForm() {
       }
     }
   );
+
   const updateAssistant = api.assistant.update.useMutation();
   const createAssistant = api.assistant.create.useMutation();
 
@@ -235,9 +236,7 @@ export default function GptBuilderForm() {
                   <h3 className="text-sm font-medium text-slate-950 dark:text-slate-50">
                     Knowledge
                   </h3>
-                  <Button variant="outline" size="sm" className="self-start">
-                    Upload
-                  </Button>
+                  <FileManagement />
                 </div>
 
                 <div className="flex flex-col gap-y-3">
